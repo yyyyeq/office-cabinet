@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>低值品寶藏鐵櫃 🗄️✨</title>
+  <title>低值品鐵櫃 🗄️✨</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,10 +22,12 @@
     .door-left-cute {
       background: linear-gradient(135deg, #FFFCF7 0%, #F5EFE6 100%);
       border-right: 3px dashed #E2DCD0;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
     }
     .door-right-cute {
       background: linear-gradient(135deg, #FFFCF7 0%, #F5EFE6 100%);
       border-left: 3px dashed #E2DCD0;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
     }
     .cute-handle {
       background: linear-gradient(180deg, #E6E1D8 0%, #C8C0B2 100%);
@@ -80,7 +82,7 @@
         <button type="button" onclick="toggleDoor()" id="main-door-btn" class="cursor-pointer px-4 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amber-800 text-amber-50 hover:bg-amber-900 shadow-md transition-all active:scale-95 flex items-center gap-1.5">
           🚪 <span id="door-btn-text">打開鐵櫃</span>
         </button>
-        <button type="button" onclick="openLoanModalList()" id="main-loan-btn" class="cursor-pointer px-3.5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-rose-100 text-rose-800 hover:bg-rose-200 border-2 border-rose-200/80 transition-all shadow-sm">
+        <button type="button" onclick="openLoanModalList()" class="cursor-pointer px-3.5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-rose-100 text-rose-800 hover:bg-rose-200 border-2 border-rose-200/80 transition-all shadow-sm">
           📖 借還小本本 (<span id="loan-count-badge" class="font-extrabold text-rose-600">0</span>)
         </button>
       </div>
@@ -97,7 +99,7 @@
         <span id="status-hint" class="text-amber-800 font-bold bg-amber-100/80 px-2.5 py-1 rounded-full">👉 點擊大門或按鈕開櫃子！</span>
       </div>
       <div id="breadcrumb-area" style="display:none;" class="items-center gap-1.5">
-        <button type="button" onclick="backToAll()" id="btn-back-all" class="cursor-pointer text-stone-600 hover:text-amber-700 font-bold bg-white px-2 py-0.5 rounded-md border border-stone-200 shadow-2xs">← 全櫃 6 格</button>
+        <button type="button" onclick="backToAll()" class="cursor-pointer text-stone-600 hover:text-amber-700 font-bold bg-white px-2 py-0.5 rounded-md border border-stone-200 shadow-2xs">← 全櫃 6 格</button>
         <span class="text-stone-400">/</span>
         <span id="current-compartment-label" class="font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200"></span>
       </div>
@@ -106,10 +108,10 @@
     <!-- 奶霜米白大鐵櫃主體 -->
     <div class="cute-cabinet-shell w-full rounded-3xl min-h-[580px] p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
 
-      <!-- 視圖 A：未打開時的超萌雙開大門片 (點門直接開) -->
+      <!-- 視圖 A：未打開時的超萌雙開大門片 -->
       <div id="closed-doors-view" onclick="toggleDoor()" class="grid grid-cols-2 gap-0 w-full flex-1 cursor-pointer select-none rounded-2xl overflow-hidden shadow-sm border-2 border-stone-200/70">
         <!-- 左門片 -->
-        <div class="door-left-cute p-7 flex flex-col justify-between hover:bg-amber-50/20 transition">
+        <div id="door-left-el" class="door-left-cute p-7 flex flex-col justify-between hover:bg-amber-50/20 transition">
           <div class="w-20">
             <div class="cute-louver"></div>
             <div class="cute-louver"></div>
@@ -132,7 +134,7 @@
         </div>
 
         <!-- 右門片 -->
-        <div class="door-right-cute p-7 flex flex-col justify-between hover:bg-amber-50/20 transition">
+        <div id="door-right-el" class="door-right-cute p-7 flex flex-col justify-between hover:bg-amber-50/20 transition">
           <div class="w-20 self-end">
             <div class="cute-louver"></div>
             <div class="cute-louver"></div>
@@ -222,7 +224,7 @@
       <div id="single-view" style="display:none;" class="flex-col h-full flex-1">
         <div class="flex justify-between items-center mb-4 pb-3 border-b-2 border-stone-200">
           <div class="flex items-center gap-2.5">
-            <button type="button" onclick="backToAll()" id="btn-back-single" class="cursor-pointer text-xs px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold transition">← 返回 6 格</button>
+            <button type="button" onclick="backToAll()" class="cursor-pointer text-xs px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold transition">← 返回 6 格</button>
             <h2 id="single-title" class="text-base font-extrabold text-stone-800">櫃位內容</h2>
             <span id="single-count" class="text-xs bg-white px-2.5 py-0.5 rounded-full text-stone-600 font-bold border border-stone-200">0 樣物品</span>
           </div>
@@ -389,19 +391,30 @@
     let loansList = [];
     let currentUploadId = null;
 
-    // 開關門動作
+    // 開關門動作（帶平滑滑開動畫）
     function toggleDoor() {
       doorOpen = !doorOpen;
       const doorsView = document.getElementById('closed-doors-view');
+      const lDoor = document.getElementById('door-left-el');
+      const rDoor = document.getElementById('door-right-el');
       const gridView = document.getElementById('grid-view');
       const singleView = document.getElementById('single-view');
       const doorText = document.getElementById('door-btn-text');
       const hint = document.getElementById('status-hint');
 
       if (doorOpen) {
-        doorsView.style.display = 'none';
-        gridView.style.display = 'grid';
-        singleView.style.display = 'none';
+        // 播放向兩側滑開動畫
+        lDoor.style.transform = 'translateX(-100%)';
+        lDoor.style.opacity = '0';
+        rDoor.style.transform = 'translateX(100%)';
+        rDoor.style.opacity = '0';
+
+        setTimeout(() => {
+          doorsView.style.display = 'none';
+          gridView.style.display = 'grid';
+          singleView.style.display = 'none';
+        }, 300);
+
         doorText.innerText = '關閉鐵櫃';
         hint.innerText = '✨ 櫃門開開囉！點選格子看裡面有什麼';
         hint.className = 'text-emerald-800 font-bold bg-emerald-100/80 px-2.5 py-1 rounded-full';
@@ -409,6 +422,14 @@
         doorsView.style.display = 'grid';
         gridView.style.display = 'none';
         singleView.style.display = 'none';
+
+        setTimeout(() => {
+          lDoor.style.transform = 'translateX(0)';
+          lDoor.style.opacity = '1';
+          rDoor.style.transform = 'translateX(0)';
+          rDoor.style.opacity = '1';
+        }, 20);
+
         doorText.innerText = '打開鐵櫃';
         hint.innerText = '👉 點擊大門或按鈕開櫃子！';
         hint.className = 'text-amber-800 font-bold bg-amber-100/80 px-2.5 py-1 rounded-full';
@@ -437,9 +458,9 @@
       const keys = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
       keys.forEach(k => {
         const its = allItems.filter(i => i.cabinet === k);
-        const countEl = document.getElementById(`count-${k}`);
-        const prevEl = document.getElementById(`preview-${k}`);
-        if (countEl) countEl.innerText = `${its.length} 項`;
+        const countEl = document.getElementById('count-' + k);
+        const prevEl = document.getElementById('preview-' + k);
+        if (countEl) countEl.innerText = its.length + ' 項';
         if (prevEl) {
           prevEl.innerHTML = its.slice(0, 3).map(it => `
             <div class="truncate flex justify-between items-center text-xs">
@@ -627,8 +648,10 @@
       openLoanModalList();
     }
 
-    // 初始化直接執行，不等待 DOMContentLoaded，載入即就緒
-    updatePreviews();
+    // 確保頁面所有元素都畫好之後才執行 updatePreviews，徹底消除報錯！
+    window.addEventListener('load', function() {
+      updatePreviews();
+    });
   </script>
 </body>
 </html>
