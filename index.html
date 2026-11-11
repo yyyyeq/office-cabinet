@@ -9,42 +9,42 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Noto Sans TC', -apple-system, sans-serif;
+      font-family: 'Noto Sans TC', sans-serif;
       background-color: #ECEAE4;
-      margin: 0;
-      padding: 0;
     }
-    .cabinet-wrapper {
-      perspective: 1200px;
+    .cabinet-shell {
+      background: linear-gradient(145deg, #FAF8F5 0%, #EDE9E1 100%);
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.2), 0 0 0 2px #DFD9CE inset;
     }
-    .metal-door {
+    /* 雙門平移滑動動畫：保證不受 3D 與 overflow 限制 */
+    .door-panel {
       position: absolute;
       top: 0;
       bottom: 0;
       width: 50%;
       background: linear-gradient(180deg, #F9F8F5 0%, #EDE8DF 100%);
       box-shadow: inset 2px 2px 3px rgba(255,255,255,0.9), inset -2px -2px 4px rgba(0,0,0,0.06), 0 10px 25px rgba(0,0,0,0.15);
-      transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease;
+      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
       cursor: pointer;
-      z-index: 30;
+      z-index: 20;
     }
     #door-left {
       left: 0;
-      transform-origin: left center;
       border-right: 1.5px solid #D6D1C7;
     }
     #door-right {
       right: 0;
-      transform-origin: right center;
       border-left: 1.5px solid #D6D1C7;
     }
-    /* 開門狀態：強力 3D 展開並穿透點擊 */
-    .door-opened-left {
-      transform: rotateY(-130deg) !important;
+    /* 開啟時向兩側滑開收合 */
+    .slide-open-left {
+      transform: translateX(-102%) !important;
+      opacity: 0;
       pointer-events: none !important;
     }
-    .door-opened-right {
-      transform: rotateY(130deg) !important;
+    .slide-open-right {
+      transform: translateX(102%) !important;
+      opacity: 0;
       pointer-events: none !important;
     }
     .metal-handle {
@@ -57,10 +57,6 @@
       border-radius: 2px;
       opacity: 0.25;
       margin-bottom: 4px;
-    }
-    .cabinet-box {
-      background: linear-gradient(145deg, #FAF8F5 0%, #EDE9E1 100%);
-      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.2), 0 0 0 2px #DFD9CE inset;
     }
     .compartment-card {
       background: #EAE6DE;
@@ -90,7 +86,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="toggleDoorForce()" id="door-toggle-btn" class="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition active:scale-95">
+        <button onclick="toggleDoorNow()" id="door-toggle-btn" class="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition active:scale-95">
           🚪 打開鐵櫃
         </button>
         <button onclick="openLoanModalList()" class="px-3 py-2 text-xs sm:text-sm font-medium rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-200 transition">
@@ -106,7 +102,7 @@
       <div class="flex items-center gap-2">
         <span class="font-bold">米白烤漆雙開鐵櫃</span>
         <span>|</span>
-        <span id="hint-text" class="text-amber-800 font-medium animate-pulse">👉 請點擊櫃門或右上角按鈕打開</span>
+        <span id="hint-text" class="text-amber-800 font-medium">👉 請點擊櫃門或右上角按鈕打開</span>
       </div>
       <div id="breadcrumb-area" style="display:none;" class="items-center gap-1">
         <button onclick="backToAllCompartments()" class="text-amber-800 underline font-bold">全櫃 6 格</button>
@@ -115,121 +111,119 @@
       </div>
     </div>
 
-    <!-- 鐵櫃本體 -->
-    <div class="cabinet-wrapper w-full relative">
-      <div class="cabinet-box w-full rounded-2xl border-4 border-[#DFD9CE] min-h-[560px] p-4 sm:p-6 relative overflow-hidden flex flex-col">
+    <!-- 鐵櫃主體外框 -->
+    <div class="cabinet-shell w-full rounded-2xl border-4 border-[#DFD9CE] min-h-[560px] p-4 sm:p-6 relative overflow-hidden flex flex-col">
 
-        <!-- 內部 6 格收納空間 -->
-        <div id="grid-view" class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full flex-1">
-          <!-- 上 3 格 -->
-          <div onclick="openCompartment('top-left')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-              <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">左上櫃</span>
-              <span id="count-top-left" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">4 項</span>
-            </div>
-            <div id="preview-top-left" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
-            <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+      <!-- 內部 6 格收納空間 -->
+      <div id="grid-view" class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full flex-1 z-0">
+        <!-- 上 3 格 -->
+        <div onclick="openCompartment('top-left')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
+          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">左上櫃</span>
+            <span id="count-top-left" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">4 項</span>
           </div>
-
-          <div onclick="openCompartment('top-center')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-              <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">中上櫃</span>
-              <span id="count-top-center" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">9 項</span>
-            </div>
-            <div id="preview-top-center" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
-            <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
-          </div>
-
-          <div onclick="openCompartment('top-right')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-              <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">右上櫃</span>
-              <span id="count-top-right" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">15 項</span>
-            </div>
-            <div id="preview-top-right" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
-            <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
-          </div>
-
-          <!-- 下 3 格 -->
-          <div onclick="openCompartment('bottom-left')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-              <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">左下櫃</span>
-              <span id="count-bottom-left" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">7 項</span>
-            </div>
-            <div id="preview-bottom-left" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
-            <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
-          </div>
-
-          <div onclick="openCompartment('bottom-center')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-              <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">中下櫃 (下中)</span>
-              <span id="count-bottom-center" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">7 項</span>
-            </div>
-            <div id="preview-bottom-center" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
-            <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
-          </div>
-
-          <div onclick="openCompartment('bottom-right')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-              <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">右下櫃 (下右)</span>
-              <span id="count-bottom-right" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">12 項</span>
-            </div>
-            <div id="preview-bottom-right" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
-            <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
-          </div>
+          <div id="preview-top-left" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
+          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
         </div>
 
-        <!-- 單格物料展開清單 -->
-        <div id="single-view" style="display:none;" class="flex-col h-full flex-1">
-          <div class="flex justify-between items-center mb-4 pb-3 border-b border-stone-300">
-            <div class="flex items-center gap-3">
-              <button onclick="backToAllCompartments()" class="text-xs px-3 py-1.5 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold">← 返回全櫃</button>
-              <h2 id="single-title" class="text-base font-bold text-stone-800">櫃位內容</h2>
-              <span id="single-count" class="text-xs bg-white px-2 py-0.5 rounded-full text-stone-600 border">0 樣品項</span>
-            </div>
-            <div>
-              <input type="text" id="search-box" oninput="searchCurrent(this.value)" placeholder="搜尋此櫃物品..." class="text-xs px-3 py-1.5 rounded-lg border border-stone-300 bg-white">
-            </div>
+        <div onclick="openCompartment('top-center')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
+          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">中上櫃</span>
+            <span id="count-top-center" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">9 項</span>
           </div>
-          <div id="items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto max-h-[480px]"></div>
+          <div id="preview-top-center" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
+          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
         </div>
 
-        <!-- 3D 雙開門 (左門) -->
-        <div id="door-left" onclick="toggleDoorForce()" class="metal-door flex flex-col justify-between p-6">
-          <div class="w-16">
-            <div class="louver"></div><div class="louver"></div><div class="louver"></div>
+        <div onclick="openCompartment('top-right')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
+          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">右上櫃</span>
+            <span id="count-top-right" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">15 項</span>
           </div>
-          <div class="bg-stone-100/90 border border-stone-300 p-3 rounded shadow-sm max-w-[180px]">
-            <div class="text-[10px] text-stone-400 font-bold uppercase">OFFICE STORAGE</div>
-            <div class="text-xs font-bold text-stone-800">低值品管理櫃</div>
-            <div class="text-[10px] text-amber-700 mt-1 font-semibold">點此處直接打開 🔑</div>
-          </div>
-          <div class="flex justify-end items-center">
-            <div class="metal-handle w-3.5 h-20 rounded-full mr-2"></div>
-            <div class="w-2.5 h-2.5 rounded-full bg-stone-700"></div>
-          </div>
-          <div class="w-16">
-            <div class="louver"></div><div class="louver"></div>
-          </div>
+          <div id="preview-top-right" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
+          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
         </div>
 
-        <!-- 3D 雙開門 (右門) -->
-        <div id="door-right" onclick="toggleDoorForce()" class="metal-door flex flex-col justify-between p-6">
-          <div class="w-16 self-end">
-            <div class="louver"></div><div class="louver"></div><div class="louver"></div>
+        <!-- 下 3 格 -->
+        <div onclick="openCompartment('bottom-left')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
+          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">左下櫃</span>
+            <span id="count-bottom-left" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">7 項</span>
           </div>
-          <div class="self-end bg-amber-50 border border-amber-200 p-2.5 rounded shadow-sm max-w-[170px]">
-            <div class="text-[11px] text-amber-900 font-bold">📌 線材用畢請歸位</div>
-            <div class="text-[10px] text-stone-500">點此處直接打開</div>
-          </div>
-          <div class="flex items-center">
-            <div class="metal-handle w-3.5 h-20 rounded-full ml-2"></div>
-          </div>
-          <div class="w-16 self-end">
-            <div class="louver"></div><div class="louver"></div>
-          </div>
+          <div id="preview-bottom-left" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
+          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
         </div>
 
+        <div onclick="openCompartment('bottom-center')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
+          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">中下櫃 (下中)</span>
+            <span id="count-bottom-center" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">7 項</span>
+          </div>
+          <div id="preview-bottom-center" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
+          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+        </div>
+
+        <div onclick="openCompartment('bottom-right')" class="compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
+          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">右下櫃 (下右)</span>
+            <span id="count-bottom-right" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">12 項</span>
+          </div>
+          <div id="preview-bottom-right" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1">載入中...</div>
+          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+        </div>
       </div>
+
+      <!-- 單格物料展開清單 -->
+      <div id="single-view" style="display:none;" class="flex-col h-full flex-1 z-0">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-stone-300">
+          <div class="flex items-center gap-3">
+            <button onclick="backToAllCompartments()" class="text-xs px-3 py-1.5 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold">← 返回全櫃</button>
+            <h2 id="single-title" class="text-base font-bold text-stone-800">櫃位內容</h2>
+            <span id="single-count" class="text-xs bg-white px-2 py-0.5 rounded-full text-stone-600 border">0 樣品項</span>
+          </div>
+          <div>
+            <input type="text" id="search-box" oninput="searchCurrent(this.value)" placeholder="搜尋此櫃物品..." class="text-xs px-3 py-1.5 rounded-lg border border-stone-300 bg-white">
+          </div>
+        </div>
+        <div id="items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto max-h-[480px]"></div>
+      </div>
+
+      <!-- 左櫃門 (點擊門片直接開) -->
+      <div id="door-left" onclick="toggleDoorNow()" class="door-panel flex flex-col justify-between p-6">
+        <div class="w-16">
+          <div class="louver"></div><div class="louver"></div><div class="louver"></div>
+        </div>
+        <div class="bg-stone-100/90 border border-stone-300 p-3 rounded shadow-sm max-w-[180px]">
+          <div class="text-[10px] text-stone-400 font-bold uppercase">OFFICE STORAGE</div>
+          <div class="text-xs font-bold text-stone-800">低值品管理櫃</div>
+          <div class="text-[10px] text-amber-700 mt-1 font-semibold">點此處直接打開 🔑</div>
+        </div>
+        <div class="flex justify-end items-center">
+          <div class="metal-handle w-3.5 h-20 rounded-full mr-2"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-stone-700"></div>
+        </div>
+        <div class="w-16">
+          <div class="louver"></div><div class="louver"></div>
+        </div>
+      </div>
+
+      <!-- 右櫃門 (點擊門片直接開) -->
+      <div id="door-right" onclick="toggleDoorNow()" class="door-panel flex flex-col justify-between p-6">
+        <div class="w-16 self-end">
+          <div class="louver"></div><div class="louver"></div><div class="louver"></div>
+        </div>
+        <div class="self-end bg-amber-50 border border-amber-200 p-2.5 rounded shadow-sm max-w-[170px]">
+          <div class="text-[11px] text-amber-900 font-bold">📌 線材用畢請歸位</div>
+          <div class="text-[10px] text-stone-500">點此處直接打開</div>
+        </div>
+        <div class="flex items-center">
+          <div class="metal-handle w-3.5 h-20 rounded-full ml-2"></div>
+        </div>
+        <div class="w-16 self-end">
+          <div class="louver"></div><div class="louver"></div>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -302,15 +296,12 @@
   </div>
 
   <script>
-    // 1. Supabase 連線資訊
     const SUPABASE_URL = "https://qmzgdvrjwgjlnwduswkz.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_WOx-4_9CosVCAE1oPFQbbA_M4Y_uT2d";
     let supabase = null;
     try {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch(e) {
-      console.warn('Supabase 初始化警告', e);
-    }
+    } catch(e) {}
 
     const CABINET_MAP = {
       'top-left': '左上櫃',
@@ -321,7 +312,6 @@
       'bottom-right': '右下櫃 (下右)'
     };
 
-    // 內建完整 54 項物料備援資料 (防網路卡住)
     let allItems = [
       { id: "item-001", cabinet: "bottom-center", name: "紫米 USB-Type-C (Micro轉C 30cm)", count: 12, unit: "條", note: "ZMI二合一數據線", tag: "線材" },
       { id: "item-002", cabinet: "bottom-center", name: "Lightning 二合一 網路轉接器", count: 5, unit: "個", note: "Lightning轉RJ45 千兆網卡", tag: "轉接器" },
@@ -389,8 +379,8 @@
     let loansList = [];
     let currentUploadId = null;
 
-    // 開關門動作（雙重機制：樣式類別 + 備援 inline style）
-    function toggleDoorForce() {
+    // 開關門動作（滑開 + 備援隱藏）
+    function toggleDoorNow() {
       doorOpen = !doorOpen;
       const lDoor = document.getElementById('door-left');
       const rDoor = document.getElementById('door-right');
@@ -398,26 +388,23 @@
       const hint = document.getElementById('hint-text');
 
       if (doorOpen) {
-        lDoor.classList.add('door-opened-left');
-        rDoor.classList.add('door-opened-right');
+        lDoor.classList.add('slide-open-left');
+        rDoor.classList.add('slide-open-right');
         btn.innerText = '🔒 關閉鐵櫃';
         btn.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 shadow transition';
         hint.innerText = '✅ 櫃門已開啟，請點選任一櫃格檢視物品';
-        hint.classList.remove('animate-pulse');
       } else {
-        lDoor.classList.remove('door-opened-left');
-        rDoor.classList.remove('door-opened-right');
+        lDoor.classList.remove('slide-open-left');
+        rDoor.classList.remove('slide-open-right');
         btn.innerText = '🚪 打開鐵櫃';
         btn.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition';
         hint.innerText = '👉 請點擊櫃門或右上角按鈕打開';
-        hint.classList.add('animate-pulse');
         backToAllCompartments();
       }
     }
 
-    // 進入單格
     function openCompartment(cabKey) {
-      if (!doorOpen) toggleDoorForce();
+      if (!doorOpen) toggleDoorNow();
 
       currentCabKey = cabKey;
       document.getElementById('grid-view').style.display = 'none';
@@ -429,7 +416,6 @@
       renderItems(cabKey);
     }
 
-    // 返回全櫃
     function backToAllCompartments() {
       currentCabKey = null;
       document.getElementById('grid-view').style.display = 'grid';
@@ -437,7 +423,6 @@
       document.getElementById('breadcrumb-area').style.display = 'none';
     }
 
-    // 更新各櫃預覽
     function updatePreviews() {
       const keys = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
       keys.forEach(k => {
@@ -456,7 +441,6 @@
       });
     }
 
-    // 渲染清單
     function renderItems(cabKey, keyword = '') {
       const list = document.getElementById('items-list');
       let its = allItems.filter(i => i.cabinet === cabKey);
@@ -524,7 +508,6 @@
       return '📦';
     }
 
-    // 增減數量
     async function changeQty(id, delta) {
       const it = allItems.find(i => i.id === id);
       if (!it) return;
@@ -537,7 +520,6 @@
       }
     }
 
-    // 換照
     function changePhoto(id) {
       currentUploadId = id;
       document.getElementById('file-input').click();
@@ -572,7 +554,6 @@
       }
     }
 
-    // 借出彈窗
     function openLoanPopupForItem(id) {
       const it = allItems.find(i => i.id === id);
       if (!it) return;
@@ -617,7 +598,6 @@
       }
     }
 
-    // 借還日誌
     function openLoanModalList() {
       const tbody = document.getElementById('history-table-body');
       if (loansList.length === 0) {
