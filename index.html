@@ -15,13 +15,11 @@
       background-image: radial-gradient(#E8E2D5 1.5px, transparent 1.5px);
       background-size: 24px 24px;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
     }
 
-    /* 3D 鐵櫃立體視角 */
     .cabinet-stage {
-      perspective: 1500px;
-      -webkit-perspective: 1500px;
+      perspective: 1600px;
+      -webkit-perspective: 1600px;
     }
 
     .cute-cabinet-shell {
@@ -31,7 +29,7 @@
       -webkit-transform-style: preserve-3d;
     }
 
-    /* 左右門片 3D 軸心旋轉 */
+    /* 門片基礎樣式 */
     .door-panel {
       position: absolute;
       top: 0;
@@ -41,15 +39,12 @@
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
-      transform-style: preserve-3d;
-      -webkit-transform-style: preserve-3d;
-      transition: transform 0.9s cubic-bezier(0.25, 1, 0.3, 1), box-shadow 0.9s ease;
-      -webkit-transition: -webkit-transform 0.9s cubic-bezier(0.25, 1, 0.3, 1), box-shadow 0.9s ease;
+      transition: transform 0.85s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s ease;
+      -webkit-transition: -webkit-transform 0.85s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s ease;
       background: linear-gradient(135deg, #FFFCF7 0%, #F5EFE6 100%);
       box-shadow: inset 2px 2px 4px rgba(255,255,255,0.9), inset -2px -2px 6px rgba(0,0,0,0.06), 0 10px 25px rgba(160, 140, 120, 0.2);
     }
 
-    /* 左門鉸鏈在最左側 */
     #door-left-panel {
       left: 0;
       transform-origin: left center;
@@ -57,7 +52,6 @@
       border-right: 2px dashed #E2DCD0;
     }
 
-    /* 右門鉸鏈在最右側 */
     #door-right-panel {
       right: 0;
       transform-origin: right center;
@@ -65,22 +59,31 @@
       border-left: 2px dashed #E2DCD0;
     }
 
-    /* 開門儀式感狀態：向兩側大角度開啟（像真正的鐵櫃門掀開） */
-    .cabinet-stage.is-open #door-left-panel {
-      transform: rotateY(-130deg);
-      -webkit-transform: rotateY(-130deg);
-      pointer-events: none;
-      box-shadow: 15px 15px 30px rgba(0, 0, 0, 0.15);
+    /* 
+      純 CSS 魔法：直接用 Checkbox 狀態驅動 3D 雙開！
+      不依賴任何 JS，點擊門片或按鈕 100% 保證向兩側大角度掀開！
+    */
+    #door-toggle-checkbox:checked ~ main .cabinet-stage #door-left-panel {
+      transform: rotateY(-125deg) translateX(-10px);
+      -webkit-transform: rotateY(-125deg) translateX(-10px);
+      opacity: 0;
+      pointer-events: none !important;
     }
 
-    .cabinet-stage.is-open #door-right-panel {
-      transform: rotateY(130deg);
-      -webkit-transform: rotateY(130deg);
-      pointer-events: none;
-      box-shadow: -15px 15px 30px rgba(0, 0, 0, 0.15);
+    #door-toggle-checkbox:checked ~ main .cabinet-stage #door-right-panel {
+      transform: rotateY(125deg) translateX(10px);
+      -webkit-transform: rotateY(125deg) translateX(10px);
+      opacity: 0;
+      pointer-events: none !important;
     }
 
-    /* 門把與通風百葉槽 */
+    #door-toggle-checkbox:checked ~ header #door-btn-text-open { display: none; }
+    #door-toggle-checkbox:checked ~ header #door-btn-text-close { display: inline; }
+    #door-toggle-checkbox:checked ~ main #status-hint-closed { display: none; }
+    #door-toggle-checkbox:checked ~ main #status-hint-opened { display: inline-block; }
+    #door-toggle-checkbox:checked ~ header #badge-locked { display: none; }
+    #door-toggle-checkbox:checked ~ header #badge-opened { display: inline-block; }
+
     .cute-handle {
       background: linear-gradient(180deg, #E6E1D8 0%, #C8C0B2 100%);
       box-shadow: inset 0 2px 2px #fff, 0 4px 8px rgba(120, 105, 90, 0.2);
@@ -106,7 +109,6 @@
       border-right: 3px dotted rgba(202, 138, 4, 0.3);
     }
 
-    /* 內部可愛收納格 */
     .cute-box {
       background: #FFFFFF;
       box-shadow: 0 4px 12px rgba(160, 145, 125, 0.08), 0 0 0 2px #EFEAE1;
@@ -121,6 +123,9 @@
 </head>
 <body class="min-h-screen text-stone-700 flex flex-col justify-between">
 
+  <!-- 純 CSS 觸發開門的隱藏核心 Checkbox -->
+  <input type="checkbox" id="door-toggle-checkbox" class="hidden">
+
   <!-- 頂部粉萌導覽列 -->
   <header class="bg-white/85 backdrop-blur-md border-b-2 border-stone-200/80 sticky top-0 z-50 px-4 py-3">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
@@ -129,17 +134,22 @@
         <div>
           <h1 class="text-base sm:text-lg font-extrabold text-stone-800 flex items-center gap-1.5">
             低值品寶藏鐵櫃
-            <span id="header-status-badge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-bold">
+            <span id="badge-locked" class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-bold">
               🔒 鎖定中
+            </span>
+            <span id="badge-opened" style="display:none;" class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold">
+              ✨ 敞開中
             </span>
           </h1>
           <p class="text-[11px] text-stone-400 font-medium hidden sm:block">點擊鐵櫃門或右上角按鈕・體驗開箱儀式感 ✨</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button type="button" id="main-door-btn" class="cursor-pointer px-4 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amber-800 text-amber-50 hover:bg-amber-900 active:scale-95 transition shadow-sm flex items-center gap-1.5">
-          🚪 <span id="door-btn-text">打開鐵櫃</span>
-        </button>
+        <!-- 點擊這個按鈕直接勾選/取消 checkbox -->
+        <label for="door-toggle-checkbox" onclick="handleDoorSound()" class="cursor-pointer px-4 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amber-800 text-amber-50 hover:bg-amber-900 active:scale-95 transition shadow-sm flex items-center gap-1.5 select-none">
+          🚪 <span id="door-btn-text-open">打開鐵櫃</span>
+          <span id="door-btn-text-close" style="display:none;">關閉鐵櫃</span>
+        </label>
         <button type="button" onclick="openLoanModalList()" class="cursor-pointer px-3.5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-rose-100 text-rose-800 hover:bg-rose-200 border-2 border-rose-200 transition shadow-sm">
           📖 借還本 (<span id="loan-count-badge" class="font-extrabold text-rose-600">0</span>)
         </button>
@@ -154,8 +164,11 @@
     <div class="w-full relative mb-3 flex justify-between items-center text-xs px-2">
       <div class="flex items-center gap-2">
         <span class="px-2 py-1 bg-stone-200/70 text-stone-700 font-bold rounded-lg text-[11px]">🏷️ 辦公室米白鐵櫃</span>
-        <span id="status-hint" class="text-amber-800 font-bold bg-amber-100/90 px-3 py-1 rounded-full text-xs shadow-2xs">
+        <span id="status-hint-closed" class="text-amber-800 font-bold bg-amber-100/90 px-3 py-1 rounded-full text-xs shadow-2xs">
           👉 點擊大門或按鈕解鎖鐵櫃！🔑
+        </span>
+        <span id="status-hint-opened" style="display:none;" class="text-emerald-800 font-bold bg-emerald-100/90 px-3 py-1 rounded-full text-xs shadow-2xs">
+          ✨ 鐵櫃已打開！點選任意格子翻翻看 🎁
         </span>
       </div>
       <div id="breadcrumb-area" style="display:none;" class="items-center gap-1.5">
@@ -171,9 +184,9 @@
       <!-- 奶霜米白大鐵櫃主體 -->
       <div class="cute-cabinet-shell w-full rounded-3xl min-h-[580px] p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
 
-        <!-- ================= 3D 雙開大門片（在最上層覆蓋） ================= -->
+        <!-- ================= 3D 雙開大門片（點門直接觸發 checkbox 開門） ================= -->
         <!-- 左門 -->
-        <div id="door-left-panel" class="door-panel p-6 sm:p-7 flex flex-col justify-between">
+        <label for="door-toggle-checkbox" id="door-left-panel" onclick="handleDoorSound()" class="door-panel p-6 sm:p-7 flex flex-col justify-between">
           <div class="w-16 sm:w-20 pointer-events-none">
             <div class="cute-louver"></div>
             <div class="cute-louver"></div>
@@ -193,10 +206,10 @@
             <div class="cute-louver"></div>
             <div class="cute-louver"></div>
           </div>
-        </div>
+        </label>
 
         <!-- 右門 -->
-        <div id="door-right-panel" class="door-panel p-6 sm:p-7 flex flex-col justify-between">
+        <label for="door-toggle-checkbox" id="door-right-panel" onclick="handleDoorSound()" class="door-panel p-6 sm:p-7 flex flex-col justify-between">
           <div class="w-16 sm:w-20 self-end pointer-events-none">
             <div class="cute-louver"></div>
             <div class="cute-louver"></div>
@@ -216,9 +229,9 @@
             <div class="cute-louver"></div>
             <div class="cute-louver"></div>
           </div>
-        </div>
+        </label>
 
-        <!-- ================= 內部 6 格童趣收納格（門打開後盡情瀏覽） ================= -->
+        <!-- ================= 內部 6 格童趣收納格 ================= -->
         <div id="grid-view" class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full flex-1 z-10">
           <!-- 左上櫃 -->
           <div onclick="openCab('top-left')" class="cute-box rounded-2xl p-4 flex flex-col cursor-pointer border-t-4 border-rose-300 group">
@@ -448,14 +461,15 @@
       { id: "item-054", cabinet: "top-left", name: "Keystone XLR 3針轉5針 音訊轉接頭", count: 1, unit: "個", note: "AUD621 公轉母金屬頭", tag: "轉接器" }
     ];
 
-    let doorOpen = false;
     let currentCabKey = null;
     let loansList = [];
     let currentUploadId = null;
 
-    // 儀式感金屬音效合成器 (Web Audio API)
-    function playSound(isOpen) {
+    // 清脆開門金屬音效
+    function handleDoorSound() {
       try {
+        const checkbox = document.getElementById('door-toggle-checkbox');
+        const willOpen = !checkbox.checked;
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
@@ -466,21 +480,19 @@
         osc.connect(gain);
         gain.connect(ctx.destination);
 
-        if (isOpen) {
-          // 清脆開門喀嗒聲
+        if (willOpen) {
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(180, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.12);
+          osc.frequency.setValueAtTime(160, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(540, ctx.currentTime + 0.12);
           gain.gain.setValueAtTime(0.25, ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.28);
           osc.start();
           osc.stop(ctx.currentTime + 0.3);
         } else {
-          // 關門沈穩咬合聲
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(320, ctx.currentTime);
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
           osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.setValueAtTime(0.28, ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
           osc.start();
           osc.stop(ctx.currentTime + 0.25);
@@ -488,37 +500,8 @@
       } catch (e) {}
     }
 
-    // 開關門動作（真・3D 大角度旋轉）
-    function toggleDoor() {
-      doorOpen = !doorOpen;
-      const stage = document.getElementById('cabinet-stage-box');
-      const doorText = document.getElementById('door-btn-text');
-      const hint = document.getElementById('status-hint');
-      const badge = document.getElementById('header-status-badge');
-
-      playSound(doorOpen);
-
-      if (doorOpen) {
-        stage.classList.add('is-open');
-        doorText.innerText = '關閉鐵櫃';
-        badge.innerText = '✨ 敞開中';
-        badge.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold';
-        hint.innerText = '✨ 鐵櫃已打開！點選任意格子翻翻看';
-        hint.className = 'text-emerald-800 font-bold bg-emerald-100/90 px-3 py-1 rounded-full text-xs shadow-2xs';
-      } else {
-        stage.classList.remove('is-open');
-        doorText.innerText = '打開鐵櫃';
-        badge.innerText = '🔒 鎖定中';
-        badge.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-bold';
-        hint.innerText = '👉 點擊大門或按鈕解鎖鐵櫃！🔑';
-        hint.className = 'text-amber-800 font-bold bg-amber-100/90 px-3 py-1 rounded-full text-xs shadow-2xs';
-        backToAll();
-      }
-    }
-
     function openCab(cabKey) {
-      if (!doorOpen) toggleDoor();
-
+      document.getElementById('door-toggle-checkbox').checked = true;
       currentCabKey = cabKey;
       document.getElementById('grid-view').style.display = 'none';
       document.getElementById('single-view').style.display = 'flex';
@@ -729,42 +712,10 @@
       openLoanModalList();
     }
 
-    // 專門綁定手機觸控與點擊（Touch + Click 雙保證）
-    function bindInteractiveDoors() {
-      const btn = document.getElementById('main-door-btn');
-      const leftDoor = document.getElementById('door-left-panel');
-      const rightDoor = document.getElementById('door-right-panel');
-
-      const triggerHandler = function(e) {
-        if (e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        toggleDoor();
-      };
-
-      if (btn) {
-        btn.addEventListener('click', triggerHandler);
-        btn.addEventListener('touchend', triggerHandler);
-      }
-      if (leftDoor) {
-        leftDoor.addEventListener('click', triggerHandler);
-        leftDoor.addEventListener('touchend', triggerHandler);
-      }
-      if (rightDoor) {
-        rightDoor.addEventListener('click', triggerHandler);
-        rightDoor.addEventListener('touchend', triggerHandler);
-      }
-
+    // 確保所有標籤畫完才加載數量，安全防禦
+    window.addEventListener('load', function() {
       updatePreviews();
-    }
-
-    // 等候 DOM 完全就緒才綁定
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', bindInteractiveDoors);
-    } else {
-      bindInteractiveDoors();
-    }
+    });
   </script>
 </body>
 </html>
