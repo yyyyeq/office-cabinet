@@ -16,7 +16,6 @@
       background: linear-gradient(145deg, #FAF8F5 0%, #EDE9E1 100%);
       box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.2), 0 0 0 2px #DFD9CE inset;
     }
-    /* 雙門平移滑動動畫：保證不受 3D 與 overflow 限制 */
     .door-panel {
       position: absolute;
       top: 0;
@@ -24,7 +23,7 @@
       width: 50%;
       background: linear-gradient(180deg, #F9F8F5 0%, #EDE8DF 100%);
       box-shadow: inset 2px 2px 3px rgba(255,255,255,0.9), inset -2px -2px 4px rgba(0,0,0,0.06), 0 10px 25px rgba(0,0,0,0.15);
-      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
       cursor: pointer;
       z-index: 20;
     }
@@ -36,17 +35,30 @@
       right: 0;
       border-left: 1.5px solid #D6D1C7;
     }
-    /* 開啟時向兩側滑開收合 */
-    .slide-open-left {
-      transform: translateX(-102%) !important;
+    /* 核心魔法：使用純 CSS 驅動開門，不依賴 JS 函式，絕對能開！ */
+    #door-state:checked ~ .cabinet-shell #door-left {
+      transform: translateX(-100%);
       opacity: 0;
-      pointer-events: none !important;
+      pointer-events: none;
     }
-    .slide-open-right {
-      transform: translateX(102%) !important;
+    #door-state:checked ~ .cabinet-shell #door-right {
+      transform: translateX(100%);
       opacity: 0;
-      pointer-events: none !important;
+      pointer-events: none;
     }
+    #door-state:checked ~ header #btn-open-text {
+      display: none;
+    }
+    #door-state:checked ~ header #btn-close-text {
+      display: inline;
+    }
+    #door-state:checked ~ .status-bar #hint-open {
+      display: none;
+    }
+    #door-state:checked ~ .status-bar #hint-closed {
+      display: inline;
+    }
+
     .metal-handle {
       background: linear-gradient(180deg, #E4E4E7 0%, #A1A1AA 60%, #71717A 100%);
       box-shadow: 0 2px 5px rgba(0,0,0,0.3);
@@ -71,6 +83,9 @@
 </head>
 <body class="min-h-screen text-stone-800 flex flex-col">
 
+  <!-- 隱藏的開門狀態核取方塊 (Pure HTML/CSS 切換) -->
+  <input type="checkbox" id="door-state" class="hidden">
+
   <header class="bg-white/90 backdrop-blur border-b border-stone-200 sticky top-0 z-50 px-4 py-3">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2">
@@ -79,16 +94,18 @@
           <h1 class="text-base sm:text-lg font-bold text-stone-800 flex items-center gap-2">
             辦公室低值品鐵櫃
             <span id="sync-status" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-normal">
-              ● 雲端已連線
+              ● 雲端就緒
             </span>
           </h1>
           <p class="text-xs text-stone-500 hidden sm:block">點擊櫃門開闔・借還管理</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="toggleDoorNow()" id="door-toggle-btn" class="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition active:scale-95">
-          🚪 打開鐵櫃
-        </button>
+        <!-- 點擊這個 label 就會直接切換 checkbox，保證一定開門 -->
+        <label for="door-state" class="cursor-pointer px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition active:scale-95 inline-flex items-center select-none">
+          <span id="btn-open-text">🚪 打開鐵櫃</span>
+          <span id="btn-close-text" style="display:none;">🔒 關閉鐵櫃</span>
+        </label>
         <button onclick="openLoanModalList()" class="px-3 py-2 text-xs sm:text-sm font-medium rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-200 transition">
           📋 借還登記冊 (<span id="loan-count-badge">0</span>)
         </button>
@@ -98,11 +115,12 @@
 
   <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col items-center justify-center">
 
-    <div class="w-full relative mb-3 flex justify-between items-center text-xs text-stone-600 px-1">
+    <div class="status-bar w-full relative mb-3 flex justify-between items-center text-xs text-stone-600 px-1">
       <div class="flex items-center gap-2">
         <span class="font-bold">米白烤漆雙開鐵櫃</span>
         <span>|</span>
-        <span id="hint-text" class="text-amber-800 font-medium">👉 請點擊櫃門或右上角按鈕打開</span>
+        <span id="hint-open" class="text-amber-800 font-medium animate-pulse">👉 請點擊櫃門或右上角按鈕打開</span>
+        <span id="hint-closed" style="display:none;" class="text-emerald-800 font-medium">✅ 櫃門已開，點選格子檢視物品</span>
       </div>
       <div id="breadcrumb-area" style="display:none;" class="items-center gap-1">
         <button onclick="backToAllCompartments()" class="text-amber-800 underline font-bold">全櫃 6 格</button>
@@ -111,7 +129,7 @@
       </div>
     </div>
 
-    <!-- 鐵櫃主體外框 -->
+    <!-- 鐵櫃本體 -->
     <div class="cabinet-shell w-full rounded-2xl border-4 border-[#DFD9CE] min-h-[560px] p-4 sm:p-6 relative overflow-hidden flex flex-col">
 
       <!-- 內部 6 格收納空間 -->
@@ -188,8 +206,8 @@
         <div id="items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto max-h-[480px]"></div>
       </div>
 
-      <!-- 左櫃門 (點擊門片直接開) -->
-      <div id="door-left" onclick="toggleDoorNow()" class="door-panel flex flex-col justify-between p-6">
+      <!-- 左櫃門 (作為 label，點擊自動開合) -->
+      <label for="door-state" id="door-left" class="door-panel flex flex-col justify-between p-6 select-none">
         <div class="w-16">
           <div class="louver"></div><div class="louver"></div><div class="louver"></div>
         </div>
@@ -205,10 +223,10 @@
         <div class="w-16">
           <div class="louver"></div><div class="louver"></div>
         </div>
-      </div>
+      </label>
 
-      <!-- 右櫃門 (點擊門片直接開) -->
-      <div id="door-right" onclick="toggleDoorNow()" class="door-panel flex flex-col justify-between p-6">
+      <!-- 右櫃門 (作為 label，點擊自動開合) -->
+      <label for="door-state" id="door-right" class="door-panel flex flex-col justify-between p-6 select-none">
         <div class="w-16 self-end">
           <div class="louver"></div><div class="louver"></div><div class="louver"></div>
         </div>
@@ -222,7 +240,7 @@
         <div class="w-16 self-end">
           <div class="louver"></div><div class="louver"></div>
         </div>
-      </div>
+      </label>
 
     </div>
   </main>
@@ -374,38 +392,12 @@
       { id: "item-054", cabinet: "top-left", name: "Keystone XLR 3針轉5針 音訊轉接頭", count: 1, unit: "個", note: "AUD621 公轉母金屬頭", tag: "音訊轉接" }
     ];
 
-    let doorOpen = false;
     let currentCabKey = null;
     let loansList = [];
     let currentUploadId = null;
 
-    // 開關門動作（滑開 + 備援隱藏）
-    function toggleDoorNow() {
-      doorOpen = !doorOpen;
-      const lDoor = document.getElementById('door-left');
-      const rDoor = document.getElementById('door-right');
-      const btn = document.getElementById('door-toggle-btn');
-      const hint = document.getElementById('hint-text');
-
-      if (doorOpen) {
-        lDoor.classList.add('slide-open-left');
-        rDoor.classList.add('slide-open-right');
-        btn.innerText = '🔒 關閉鐵櫃';
-        btn.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 shadow transition';
-        hint.innerText = '✅ 櫃門已開啟，請點選任一櫃格檢視物品';
-      } else {
-        lDoor.classList.remove('slide-open-left');
-        rDoor.classList.remove('slide-open-right');
-        btn.innerText = '🚪 打開鐵櫃';
-        btn.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition';
-        hint.innerText = '👉 請點擊櫃門或右上角按鈕打開';
-        backToAllCompartments();
-      }
-    }
-
     function openCompartment(cabKey) {
-      if (!doorOpen) toggleDoorNow();
-
+      document.getElementById('door-state').checked = true;
       currentCabKey = cabKey;
       document.getElementById('grid-view').style.display = 'none';
       document.getElementById('single-view').style.display = 'flex';
