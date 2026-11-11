@@ -3,73 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>辦公室低值品鐵櫃管理系統</title>
+  <title>低值品寶藏鐵櫃 🗄️✨</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts: 圓潤可愛字體 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #ECEAE4;
+      font-family: 'M PLUS Rounded 1c', 'Noto Sans TC', sans-serif;
+      background-color: #F7F4EE;
+      background-image: radial-gradient(#E8E2D5 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
     }
-    .cabinet-shell {
-      background: linear-gradient(145deg, #FAF8F5 0%, #EDE9E1 100%);
-      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.2), 0 0 0 2px #DFD9CE inset;
+    /* 奶霜米白鐵櫃外框 */
+    .cute-cabinet-shell {
+      background: #FAF8F5;
+      box-shadow: 0 20px 40px -15px rgba(180, 165, 145, 0.35), 0 0 0 5px #EFEAE1, 0 0 0 8px #E2DCD0;
     }
-    .door-left-box {
-      border-right: 2px solid #D6D1C7;
-      background: linear-gradient(180deg, #F9F8F5 0%, #EDE8DF 100%);
+    /* 門片奶霜漸層 */
+    .door-left-cute {
+      background: linear-gradient(135deg, #FFFCF7 0%, #F5EFE6 100%);
+      border-right: 3px dashed #E2DCD0;
     }
-    .door-right-box {
-      border-left: 2px solid #D6D1C7;
-      background: linear-gradient(180deg, #F9F8F5 0%, #EDE8DF 100%);
+    .door-right-cute {
+      background: linear-gradient(135deg, #FFFCF7 0%, #F5EFE6 100%);
+      border-left: 3px dashed #E2DCD0;
     }
-    .metal-handle {
-      background: linear-gradient(180deg, #E4E4E7 0%, #A1A1AA 60%, #71717A 100%);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    /* 圓潤金屬拉手 */
+    .cute-handle {
+      background: linear-gradient(180deg, #E6E1D8 0%, #C8C0B2 100%);
+      box-shadow: inset 0 2px 2px #fff, 0 4px 8px rgba(120, 105, 90, 0.2);
     }
-    .louver {
-      background: #71717A;
-      height: 3px;
-      border-radius: 2px;
-      opacity: 0.25;
-      margin-bottom: 4px;
+    /* 馬卡龍格位卡片 */
+    .cute-box {
+      background: #FFFFFF;
+      box-shadow: 0 6px 16px -2px rgba(160, 145, 125, 0.08), 0 0 0 2px #EFEAE1;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    .compartment-card {
-      background: #EAE6DE;
-      box-shadow: inset 1px 1px 3px rgba(0,0,0,0.08), inset -1px -1px 2px rgba(255,255,255,0.7);
-      transition: transform 0.15s, background-color 0.15s;
+    .cute-box:hover {
+      transform: translateY(-5px) scale(1.01);
+      box-shadow: 0 12px 24px -4px rgba(220, 140, 100, 0.15), 0 0 0 3px #FBD38D;
     }
-    .compartment-card:hover {
-      background: #E1DDD3;
-      transform: translateY(-2px);
+    /* 紙膠帶裝飾 */
+    .washi-tape {
+      background: rgba(254, 215, 215, 0.7);
+      border-left: 3px dotted rgba(229, 62, 62, 0.3);
+      border-right: 3px dotted rgba(229, 62, 62, 0.3);
+    }
+    .washi-tape-yellow {
+      background: rgba(254, 240, 138, 0.7);
+      border-left: 3px dotted rgba(202, 138, 4, 0.3);
+      border-right: 3px dotted rgba(202, 138, 4, 0.3);
+    }
+    /* 百葉窗飾條 */
+    .cute-louver {
+      background: #D5CEC2;
+      height: 4px;
+      border-radius: 9999px;
+      margin-bottom: 5px;
+      opacity: 0.6;
     }
   </style>
 </head>
-<body class="min-h-screen text-stone-800 flex flex-col">
+<body class="min-h-screen text-stone-700 flex flex-col justify-between">
 
-  <!-- 頂部導覽列 -->
-  <header class="bg-white/90 backdrop-blur border-b border-stone-200 sticky top-0 z-50 px-4 py-3">
+  <!-- 頂部粉萌導覽列 -->
+  <header class="bg-white/80 backdrop-blur-md border-b-2 border-stone-200/80 sticky top-0 z-50 px-4 py-3">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <span class="text-2xl">🗄️</span>
+      <div class="flex items-center space-x-3">
+        <span class="text-3xl animate-bounce">🧁</span>
         <div>
-          <h1 class="text-base sm:text-lg font-bold text-stone-800 flex items-center gap-2">
-            辦公室低值品鐵櫃
-            <span id="sync-status" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-normal">
-              ● 系統就緒
+          <h1 class="text-lg font-extrabold text-stone-800 flex items-center gap-2">
+            低值品寶藏鐵櫃
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-bold">
+              ✨ 整理中
             </span>
           </h1>
-          <p class="text-xs text-stone-500 hidden sm:block">點擊櫃門開闔・借還管理</p>
+          <p class="text-xs text-stone-400 font-medium hidden sm:block">點擊櫃門開箱・好借好還，再借不難 (๑•̀ㅂ•́)و✧</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button id="main-door-btn" class="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition active:scale-95">
-          🚪 打開鐵櫃
+        <button id="main-door-btn" class="px-4 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-amber-800 text-amber-50 hover:bg-amber-900 shadow-md transition-all active:scale-95 flex items-center gap-1.5">
+          🚪 <span id="door-btn-text">打開鐵櫃</span>
         </button>
-        <button id="main-loan-btn" class="px-3 py-2 text-xs sm:text-sm font-medium rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-200 transition">
-          📋 借還登記冊 (<span id="loan-count-badge">0</span>)
+        <button id="main-loan-btn" class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-2xl bg-rose-100 text-rose-800 hover:bg-rose-200 border-2 border-rose-200/80 transition-all shadow-sm">
+          📖 借還小本本 (<span id="loan-count-badge" class="font-extrabold text-rose-600">0</span>)
         </button>
       </div>
     </div>
@@ -78,133 +97,151 @@
   <!-- 主畫面 -->
   <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col items-center justify-center">
 
-    <div class="w-full relative mb-3 flex justify-between items-center text-xs text-stone-600 px-1">
+    <!-- 狀態標籤列 -->
+    <div class="w-full relative mb-3 flex justify-between items-center text-xs px-2">
       <div class="flex items-center gap-2">
-        <span class="font-bold">米白烤漆雙開鐵櫃</span>
-        <span>|</span>
-        <span id="status-hint" class="text-amber-800 font-medium">👉 請點擊櫃門或右上角按鈕打開</span>
+        <span class="px-2 py-1 bg-stone-200/70 text-stone-700 font-bold rounded-lg">🏷️ 辦公室米白鐵櫃</span>
+        <span id="status-hint" class="text-amber-800 font-bold bg-amber-100/80 px-2.5 py-1 rounded-full">👉 點擊大門或按鈕開櫃子！</span>
       </div>
-      <div id="breadcrumb-area" style="display:none;" class="items-center gap-1">
-        <button id="btn-back-all" class="text-amber-800 underline font-bold">全櫃 6 格</button>
-        <span>/</span>
-        <span id="current-compartment-label" class="font-bold text-stone-800"></span>
+      <div id="breadcrumb-area" style="display:none;" class="items-center gap-1.5">
+        <button id="btn-back-all" class="text-stone-600 hover:text-amber-700 font-bold bg-white px-2 py-0.5 rounded-md border border-stone-200 shadow-2xs">← 全櫃 6 格</button>
+        <span class="text-stone-400">/</span>
+        <span id="current-compartment-label" class="font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200"></span>
       </div>
     </div>
 
-    <!-- 鐵櫃主體外框 -->
-    <div class="cabinet-shell w-full rounded-2xl border-4 border-[#DFD9CE] min-h-[560px] p-4 sm:p-6 relative overflow-hidden flex flex-col justify-between">
+    <!-- 奶霜米白大鐵櫃主體 -->
+    <div class="cute-cabinet-shell w-full rounded-3xl min-h-[580px] p-5 sm:p-7 relative overflow-hidden flex flex-col justify-between">
 
-      <!-- 視圖 A：閉合狀態的大鐵櫃門片 (預設顯示) -->
-      <div id="closed-doors-view" class="grid grid-cols-2 gap-0 w-full flex-1 cursor-pointer select-none rounded-xl overflow-hidden shadow-inner border border-stone-300">
-        <!-- 左門 -->
-        <div class="door-left-box p-6 flex flex-col justify-between hover:brightness-[0.98] transition">
-          <div class="w-16">
-            <div class="louver"></div><div class="louver"></div><div class="louver"></div>
+      <!-- 視圖 A：未打開時的超萌雙開大門片 -->
+      <div id="closed-doors-view" class="grid grid-cols-2 gap-0 w-full flex-1 cursor-pointer select-none rounded-2xl overflow-hidden shadow-sm border-2 border-stone-200/70">
+        <!-- 左門片 -->
+        <div class="door-left-cute p-7 flex flex-col justify-between hover:bg-amber-50/20 transition">
+          <div class="w-20">
+            <div class="cute-louver"></div>
+            <div class="cute-louver"></div>
+            <div class="cute-louver"></div>
           </div>
-          <div class="bg-stone-100/90 border border-stone-300 p-3 rounded shadow-sm max-w-[180px]">
-            <div class="text-[10px] text-stone-400 font-bold uppercase">OFFICE STORAGE</div>
-            <div class="text-xs font-bold text-stone-800">低值品管理櫃</div>
-            <div class="text-[11px] text-amber-700 mt-1 font-semibold">點此處直接打開 🔑</div>
+          <!-- 紙膠帶便籤 -->
+          <div class="relative bg-white border border-stone-200 p-4 rounded-2xl shadow-sm max-w-[200px] -rotate-2">
+            <div class="washi-tape absolute -top-2 left-6 w-16 h-4"></div>
+            <div class="text-[10px] text-amber-700 font-bold uppercase tracking-wider">OFFICE STORAGE</div>
+            <div class="text-sm font-extrabold text-stone-800 mt-1">低值品寶物庫 🎁</div>
+            <div class="text-[11px] text-stone-400 mt-1 font-medium">✨ 輕敲門片直接開箱</div>
           </div>
+          <!-- 把手與鎖孔 -->
           <div class="flex justify-end items-center">
-            <div class="metal-handle w-3.5 h-20 rounded-full mr-2"></div>
-            <div class="w-2.5 h-2.5 rounded-full bg-stone-700"></div>
+            <div class="cute-handle w-4 h-24 rounded-full mr-3"></div>
+            <div class="w-3.5 h-3.5 rounded-full bg-stone-600 border-2 border-stone-300"></div>
           </div>
-          <div class="w-16">
-            <div class="louver"></div><div class="louver"></div>
+          <div class="w-20">
+            <div class="cute-louver"></div>
+            <div class="cute-louver"></div>
           </div>
         </div>
 
-        <!-- 右門 -->
-        <div class="door-right-box p-6 flex flex-col justify-between hover:brightness-[0.98] transition">
-          <div class="w-16 self-end">
-            <div class="louver"></div><div class="louver"></div><div class="louver"></div>
+        <!-- 右門片 -->
+        <div class="door-right-cute p-7 flex flex-col justify-between hover:bg-amber-50/20 transition">
+          <div class="w-20 self-end">
+            <div class="cute-louver"></div>
+            <div class="cute-louver"></div>
+            <div class="cute-louver"></div>
           </div>
-          <div class="self-end bg-amber-50 border border-amber-200 p-2.5 rounded shadow-sm max-w-[170px]">
-            <div class="text-[11px] text-amber-900 font-bold">📌 線材用畢請歸位</div>
-            <div class="text-[10px] text-stone-500">點此處直接打開</div>
+          <!-- 右邊便籤 -->
+          <div class="self-end relative bg-amber-50 border border-amber-200/80 p-4 rounded-2xl shadow-sm max-w-[190px] rotate-2">
+            <div class="washi-tape-yellow absolute -top-2 right-6 w-16 h-4"></div>
+            <div class="text-xs text-amber-900 font-extrabold flex items-center gap-1">
+              <span>📌</span> 線材用畢請歸位
+            </div>
+            <div class="text-[10px] text-amber-700/80 mt-1 font-medium">借用請記得登記小本本唷！</div>
           </div>
+          <!-- 把手 -->
           <div class="flex items-center">
-            <div class="metal-handle w-3.5 h-20 rounded-full ml-2"></div>
+            <div class="cute-handle w-4 h-24 rounded-full ml-3"></div>
           </div>
-          <div class="w-16 self-end">
-            <div class="louver"></div><div class="louver"></div>
+          <div class="w-20 self-end">
+            <div class="cute-louver"></div>
+            <div class="cute-louver"></div>
           </div>
         </div>
       </div>
 
-      <!-- 視圖 B：內部 6 格收納空間 (開門後顯示) -->
+      <!-- 視圖 B：敞開後的 6 格童趣收納格 -->
       <div id="grid-view" style="display:none;" class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full flex-1">
-        <!-- 上 3 格 -->
-        <div data-cab="top-left" class="cab-grid-btn compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">左上櫃</span>
-            <span id="count-top-left" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">4 項</span>
+        <!-- 左上櫃 (粉桃系) -->
+        <div data-cab="top-left" class="cab-grid-btn cute-box rounded-2xl p-4 flex flex-col cursor-pointer border-t-4 border-rose-300 group">
+          <div class="flex justify-between items-center pb-2.5 border-b border-stone-100">
+            <span class="text-xs font-extrabold bg-rose-50 text-rose-700 px-2.5 py-1 rounded-xl">🎀 左上櫃</span>
+            <span id="count-top-left" class="text-xs bg-rose-100 text-rose-800 font-extrabold px-2.5 py-0.5 rounded-full">4 項</span>
           </div>
-          <div id="preview-top-left" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1"></div>
-          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+          <div id="preview-top-left" class="flex-1 mt-3 text-xs text-stone-600 flex flex-col gap-1.5"></div>
+          <div class="text-[11px] text-rose-600 font-extrabold mt-3 flex items-center gap-1 group-hover:translate-x-1 transition">翻翻看此櫃 →</div>
         </div>
 
-        <div data-cab="top-center" class="cab-grid-btn compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">中上櫃</span>
-            <span id="count-top-center" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">9 項</span>
+        <!-- 中上櫃 (粉橘系) -->
+        <div data-cab="top-center" class="cab-grid-btn cute-box rounded-2xl p-4 flex flex-col cursor-pointer border-t-4 border-amber-300 group">
+          <div class="flex justify-between items-center pb-2.5 border-b border-stone-100">
+            <span class="text-xs font-extrabold bg-amber-50 text-amber-800 px-2.5 py-1 rounded-xl">⭐ 中上櫃</span>
+            <span id="count-top-center" class="text-xs bg-amber-100 text-amber-800 font-extrabold px-2.5 py-0.5 rounded-full">9 項</span>
           </div>
-          <div id="preview-top-center" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1"></div>
-          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+          <div id="preview-top-center" class="flex-1 mt-3 text-xs text-stone-600 flex flex-col gap-1.5"></div>
+          <div class="text-[11px] text-amber-700 font-extrabold mt-3 flex items-center gap-1 group-hover:translate-x-1 transition">翻翻看此櫃 →</div>
         </div>
 
-        <div data-cab="top-right" class="cab-grid-btn compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">右上櫃</span>
-            <span id="count-top-right" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">15 項</span>
+        <!-- 右上櫃 (薄荷綠系) -->
+        <div data-cab="top-right" class="cab-grid-btn cute-box rounded-2xl p-4 flex flex-col cursor-pointer border-t-4 border-emerald-300 group">
+          <div class="flex justify-between items-center pb-2.5 border-b border-stone-100">
+            <span class="text-xs font-extrabold bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-xl">🍀 右上櫃</span>
+            <span id="count-top-right" class="text-xs bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full">15 項</span>
           </div>
-          <div id="preview-top-right" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1"></div>
-          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+          <div id="preview-top-right" class="flex-1 mt-3 text-xs text-stone-600 flex flex-col gap-1.5"></div>
+          <div class="text-[11px] text-emerald-700 font-extrabold mt-3 flex items-center gap-1 group-hover:translate-x-1 transition">翻翻看此櫃 →</div>
         </div>
 
-        <!-- 下 3 格 -->
-        <div data-cab="bottom-left" class="cab-grid-btn compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">左下櫃</span>
-            <span id="count-bottom-left" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">7 項</span>
+        <!-- 左下櫃 (天空藍系) -->
+        <div data-cab="bottom-left" class="cab-grid-btn cute-box rounded-2xl p-4 flex flex-col cursor-pointer border-t-4 border-sky-300 group">
+          <div class="flex justify-between items-center pb-2.5 border-b border-stone-100">
+            <span class="text-xs font-extrabold bg-sky-50 text-sky-800 px-2.5 py-1 rounded-xl">☁️ 左下櫃</span>
+            <span id="count-bottom-left" class="text-xs bg-sky-100 text-sky-800 font-extrabold px-2.5 py-0.5 rounded-full">7 項</span>
           </div>
-          <div id="preview-bottom-left" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1"></div>
-          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+          <div id="preview-bottom-left" class="flex-1 mt-3 text-xs text-stone-600 flex flex-col gap-1.5"></div>
+          <div class="text-[11px] text-sky-700 font-extrabold mt-3 flex items-center gap-1 group-hover:translate-x-1 transition">翻翻看此櫃 →</div>
         </div>
 
-        <div data-cab="bottom-center" class="cab-grid-btn compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">中下櫃 (下中)</span>
-            <span id="count-bottom-center" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">7 項</span>
+        <!-- 中下櫃 (薰衣紫系) -->
+        <div data-cab="bottom-center" class="cab-grid-btn cute-box rounded-2xl p-4 flex flex-col cursor-pointer border-t-4 border-purple-300 group">
+          <div class="flex justify-between items-center pb-2.5 border-b border-stone-100">
+            <span class="text-xs font-extrabold bg-purple-50 text-purple-800 px-2.5 py-1 rounded-xl">🍇 中下櫃 (下中)</span>
+            <span id="count-bottom-center" class="text-xs bg-purple-100 text-purple-800 font-extrabold px-2.5 py-0.5 rounded-full">7 項</span>
           </div>
-          <div id="preview-bottom-center" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1"></div>
-          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+          <div id="preview-bottom-center" class="flex-1 mt-3 text-xs text-stone-600 flex flex-col gap-1.5"></div>
+          <div class="text-[11px] text-purple-700 font-extrabold mt-3 flex items-center gap-1 group-hover:translate-x-1 transition">翻翻看此櫃 →</div>
         </div>
 
-        <div data-cab="bottom-right" class="cab-grid-btn compartment-card rounded-xl p-3.5 flex flex-col cursor-pointer border border-stone-300">
-          <div class="flex justify-between items-center pb-2 border-b border-stone-300">
-            <span class="text-xs font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">右下櫃 (下右)</span>
-            <span id="count-bottom-right" class="text-xs bg-white/80 px-2 py-0.5 rounded-full text-stone-600 font-bold">12 項</span>
+        <!-- 右下櫃 (暖奶茶系) -->
+        <div data-cab="bottom-right" class="cab-grid-btn cute-box rounded-2xl p-4 flex flex-col cursor-pointer border-t-4 border-orange-300 group">
+          <div class="flex justify-between items-center pb-2.5 border-b border-stone-100">
+            <span class="text-xs font-extrabold bg-orange-50 text-orange-800 px-2.5 py-1 rounded-xl">🥐 右下櫃 (下右)</span>
+            <span id="count-bottom-right" class="text-xs bg-orange-100 text-orange-800 font-extrabold px-2.5 py-0.5 rounded-full">12 項</span>
           </div>
-          <div id="preview-bottom-right" class="flex-1 mt-2 text-xs text-stone-500 flex flex-col gap-1"></div>
-          <div class="text-[11px] text-amber-800 font-bold mt-2">進入此櫃 →</div>
+          <div id="preview-bottom-right" class="flex-1 mt-3 text-xs text-stone-600 flex flex-col gap-1.5"></div>
+          <div class="text-[11px] text-orange-700 font-extrabold mt-3 flex items-center gap-1 group-hover:translate-x-1 transition">翻翻看此櫃 →</div>
         </div>
       </div>
 
-      <!-- 視圖 C：單格清單 -->
+      <!-- 視圖 C：單格物料清單檢視 -->
       <div id="single-view" style="display:none;" class="flex-col h-full flex-1">
-        <div class="flex justify-between items-center mb-4 pb-3 border-b border-stone-300">
-          <div class="flex items-center gap-3">
-            <button id="btn-back-single" class="text-xs px-3 py-1.5 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold">← 返回全櫃</button>
-            <h2 id="single-title" class="text-base font-bold text-stone-800">櫃位內容</h2>
-            <span id="single-count" class="text-xs bg-white px-2 py-0.5 rounded-full text-stone-600 border">0 樣品項</span>
+        <div class="flex justify-between items-center mb-4 pb-3 border-b-2 border-stone-200">
+          <div class="flex items-center gap-2.5">
+            <button id="btn-back-single" class="text-xs px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold transition">← 返回 6 格</button>
+            <h2 id="single-title" class="text-base font-extrabold text-stone-800">櫃位內容</h2>
+            <span id="single-count" class="text-xs bg-white px-2.5 py-0.5 rounded-full text-stone-600 font-bold border border-stone-200">0 樣物品</span>
           </div>
           <div>
-            <input type="text" id="search-box" placeholder="搜尋此櫃物品..." class="text-xs px-3 py-1.5 rounded-lg border border-stone-300 bg-white">
+            <input type="text" id="search-box" placeholder="🔍 搜尋這個櫃子..." class="text-xs px-3.5 py-1.5 rounded-2xl border-2 border-stone-200 focus:outline-none focus:border-amber-400 bg-white shadow-2xs">
           </div>
         </div>
-        <div id="items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto max-h-[480px]"></div>
+        <div id="items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 overflow-y-auto max-h-[480px] p-1"></div>
       </div>
 
     </div>
@@ -213,83 +250,89 @@
   <input type="file" id="file-input" accept="image/*" class="hidden">
 
   <!-- 登記借出彈窗 -->
-  <div id="loan-popup" style="display:none;" class="fixed inset-0 bg-stone-900/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-sm w-full p-5 shadow-2xl">
+  <div id="loan-popup" style="display:none;" class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-4 border-amber-100">
       <div class="flex justify-between items-center mb-3">
-        <h3 class="font-bold text-sm text-stone-800">📝 登記借出</h3>
-        <button id="close-loan-x" class="text-stone-400 hover:text-stone-600 text-lg">&times;</button>
+        <h3 class="font-extrabold text-base text-stone-800 flex items-center gap-1">
+          <span>📝</span> 登記借用
+        </h3>
+        <button id="close-loan-x" class="text-stone-400 hover:text-stone-600 text-xl font-bold">&times;</button>
       </div>
-      <div class="text-xs bg-stone-50 p-2.5 rounded border mb-3">
-        <div class="font-bold text-stone-800" id="popup-item-name"></div>
-        <div class="text-stone-500 text-[11px]" id="popup-stock"></div>
+      <div class="text-xs bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80 mb-3">
+        <div class="font-bold text-amber-950 text-sm" id="popup-item-name"></div>
+        <div class="text-amber-700/80 text-[11px] mt-0.5" id="popup-stock"></div>
       </div>
       <form id="loan-form" class="space-y-3">
         <input type="hidden" id="loan-item-id">
         <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1">借用人姓名</label>
-          <input type="text" id="loan-name" required placeholder="如：David、雅庭" class="w-full text-xs px-3 py-2 rounded border">
+          <label class="block text-xs font-bold text-stone-600 mb-1">借用人是誰？</label>
+          <input type="text" id="loan-name" required placeholder="例如：David、雅庭" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">借出數量</label>
-            <input type="number" id="loan-qty" min="1" value="1" required class="w-full text-xs px-3 py-2 rounded border">
+            <label class="block text-xs font-bold text-stone-600 mb-1">借幾個？</label>
+            <input type="number" id="loan-qty" min="1" value="1" required class="w-full text-xs px-3 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300">
           </div>
           <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">借出日期</label>
-            <input type="date" id="loan-day" required class="w-full text-xs px-2 py-2 rounded border">
+            <label class="block text-xs font-bold text-stone-600 mb-1">借出日期</label>
+            <input type="date" id="loan-day" required class="w-full text-xs px-2.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300">
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1">用途備註</label>
-          <input type="text" id="loan-note" placeholder="例如：會議室接電視" class="w-full text-xs px-3 py-2 rounded border">
+          <label class="block text-xs font-bold text-stone-600 mb-1">借去哪裡 / 備註</label>
+          <input type="text" id="loan-note" placeholder="例如：會議室投螢幕、測試新機" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300">
         </div>
         <div class="flex gap-2 pt-2">
-          <button type="button" id="close-loan-btn" class="flex-1 py-2 text-xs border rounded text-stone-600">取消</button>
-          <button type="submit" class="flex-1 py-2 text-xs bg-stone-800 text-white rounded font-bold">確認借出</button>
+          <button type="button" id="close-loan-btn" class="flex-1 py-2 text-xs rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 font-bold">先不要</button>
+          <button type="submit" class="flex-1 py-2 text-xs bg-amber-800 text-white rounded-xl font-extrabold hover:bg-amber-900 shadow">確定借走 ✨</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 借還冊彈窗 -->
-  <div id="history-popup" style="display:none;" class="fixed inset-0 bg-stone-900/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-xl w-full p-5 shadow-2xl flex flex-col max-h-[80vh]">
-      <div class="flex justify-between items-center pb-3 border-b">
-        <h3 class="font-bold text-sm text-stone-800">📋 低值品借還登記冊</h3>
-        <button id="close-history-x" class="text-stone-400 text-lg">&times;</button>
+  <!-- 借還小本本彈窗 -->
+  <div id="history-popup" style="display:none;" class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border-4 border-rose-100 flex flex-col max-h-[80vh]">
+      <div class="flex justify-between items-center pb-3 border-b-2 border-stone-100">
+        <h3 class="font-extrabold text-base text-stone-800 flex items-center gap-1.5">
+          <span>📖</span> 低值品借還小本本
+        </h3>
+        <button id="close-history-x" class="text-stone-400 hover:text-stone-600 text-xl font-bold">&times;</button>
       </div>
-      <div class="overflow-y-auto flex-1 my-2">
+      <div class="overflow-y-auto flex-1 my-3">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="bg-stone-50 border-b text-stone-500">
-              <th class="py-2 px-2">日期</th>
-              <th class="py-2 px-2">借用人</th>
-              <th class="py-2 px-2">品項</th>
-              <th class="py-2 px-2">數量</th>
-              <th class="py-2 px-2 text-right">操作</th>
+            <tr class="bg-rose-50/60 text-stone-500 rounded-lg">
+              <th class="py-2.5 px-3 rounded-l-lg font-bold">日期</th>
+              <th class="py-2.5 px-3 font-bold">借用人</th>
+              <th class="py-2.5 px-3 font-bold">借了什麼</th>
+              <th class="py-2.5 px-3 font-bold">數量</th>
+              <th class="py-2.5 px-3 rounded-r-lg text-right font-bold">狀態/歸還</th>
             </tr>
           </thead>
-          <tbody id="history-table-body" class="divide-y divide-stone-100"></tbody>
+          <tbody id="history-table-body" class="divide-y divide-stone-100 font-medium"></tbody>
         </table>
       </div>
-      <div class="pt-2 border-t flex justify-end">
-        <button id="close-history-btn" class="px-4 py-1.5 text-xs bg-stone-100 rounded text-stone-700">關閉</button>
+      <div class="pt-2 border-t border-stone-100 flex justify-end">
+        <button id="close-history-btn" class="px-5 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 rounded-2xl text-stone-700">闔上小本本</button>
       </div>
     </div>
   </div>
 
+  <footer class="py-3 text-center text-[11px] text-stone-400">
+    Office Low-Value Cabinet Management System • Made with 💖
+  </footer>
+
   <script>
-    // 櫃位對照
     const CABINET_MAP = {
-      'top-left': '左上櫃',
-      'top-center': '中上櫃',
-      'top-right': '右上櫃',
-      'bottom-left': '左下櫃',
-      'bottom-center': '中下櫃 (下中)',
-      'bottom-right': '右下櫃 (下右)'
+      'top-left': '🎀 左上櫃',
+      'top-center': '⭐ 中上櫃',
+      'top-right': '🍀 右上櫃',
+      'bottom-left': '☁️ 左下櫃',
+      'bottom-center': '🍇 中下櫃 (下中)',
+      'bottom-right': '🥐 右下櫃 (下右)'
     };
 
-    // 完整的 54 筆資料直接載入
     let allItems = [
       { id: "item-001", cabinet: "bottom-center", name: "紫米 USB-Type-C (Micro轉C 30cm)", count: 12, unit: "條", note: "ZMI二合一數據線", tag: "線材" },
       { id: "item-002", cabinet: "bottom-center", name: "Lightning 二合一 網路轉接器", count: 5, unit: "個", note: "Lightning轉RJ45 千兆網卡", tag: "轉接器" },
@@ -314,21 +357,21 @@
 
       { id: "item-020", cabinet: "bottom-left", name: "包爾星克 USB 兩用 T 型線", count: 4, unit: "條", note: "雙頭可用特殊線", tag: "線材" },
       { id: "item-021", cabinet: "bottom-left", name: "壞掉的無線滑鼠", count: 1, unit: "隻", note: "白布袋包裹，待報廢或維修", tag: "耗材" },
-      { id: "item-022", cabinet: "bottom-left", name: "藍廠 2026 紅包袋", count: 1, unit: "包", note: "全新紀念款", tag: "文宣周邊" },
-      { id: "item-023", cabinet: "bottom-left", name: "小米 3T Pro 降噪藍牙耳機", count: 1, unit: "盒", note: "真無線耳機盒裝", tag: "電子周邊" },
-      { id: "item-024", cabinet: "bottom-left", name: "vivo V23 5G 盒裝 (12G/256G)", count: 1, unit: "盒", note: "手機外盒/樣機", tag: "電子周邊" },
-      { id: "item-025", cabinet: "bottom-left", name: "PUREBURG 空氣清淨機濾網", count: 2, unit: "組", note: "全新密封袋裝", tag: "辦公耗材" },
-      { id: "item-026", cabinet: "bottom-left", name: "羅技 Logitech 灰色滑鼠墊", count: 1, unit: "捲", note: "桌墊盒裝", tag: "辦公用品" },
+      { id: "item-022", cabinet: "bottom-left", name: "藍廠 2026 紅包袋", count: 1, unit: "包", note: "全新紀念款", tag: "文宣" },
+      { id: "item-023", cabinet: "bottom-left", name: "小米 3T Pro 降噪藍牙耳機", count: 1, unit: "盒", note: "真無線耳機盒裝", tag: "電子" },
+      { id: "item-024", cabinet: "bottom-left", name: "vivo V23 5G 盒裝 (12G/256G)", count: 1, unit: "盒", note: "手機外盒/樣機", tag: "電子" },
+      { id: "item-025", cabinet: "bottom-left", name: "PUREBURG 空氣清淨機濾網", count: 2, unit: "組", note: "全新密封袋裝", tag: "耗材" },
+      { id: "item-026", cabinet: "bottom-left", name: "羅技 Logitech 灰色滑鼠墊", count: 1, unit: "捲", note: "桌墊盒裝", tag: "文具" },
 
       { id: "item-027", cabinet: "top-right", name: "藍廠 26 週年團 T", count: 2, unit: "件", note: "M號×1、S號×1 黑色短袖", tag: "衣物" },
-      { id: "item-028", cabinet: "top-right", name: "ASUS 外接式硬碟", count: 1, unit: "台", note: "編號 878547", tag: "儲存裝置" },
+      { id: "item-028", cabinet: "top-right", name: "ASUS 外接式硬碟", count: 1, unit: "台", note: "編號 878547", tag: "儲存" },
       { id: "item-029", cabinet: "top-right", name: "伽利略 USB 3.0 轉 HDMI 轉接器", count: 1, unit: "個", note: "料號 819405", tag: "轉接器" },
       { id: "item-030", cabinet: "top-right", name: "Mini DP(公) 轉 HDMI(母) 轉接器", count: 10, unit: "條", note: "料號 819406，白9、黑1", tag: "轉接器" },
       { id: "item-031", cabinet: "top-right", name: "紫米 65W 三孔快充頭 HA835", count: 1, unit: "個", note: "料號 5340001383", tag: "充電器" },
       { id: "item-032", cabinet: "top-right", name: "Apple 原廠 20W 充電頭", count: 3, unit: "個", note: "Type-C 單孔白頭", tag: "充電器" },
       { id: "item-033", cabinet: "top-right", name: "小米 36W 快充雙口充電器", count: 4, unit: "個", note: "料號 820528，未拆2、已拆2", tag: "充電器" },
       { id: "item-034", cabinet: "top-right", name: "USB 轉 DC/耳機孔充電線", count: 1, unit: "條", note: "白色細線", tag: "線材" },
-      { id: "item-035", cabinet: "top-right", name: "會議室專用 vivo 充電頭＋線", count: 0, unit: "組", note: "勿拿！10/24已轉給 David 使用", tag: "出借中" },
+      { id: "item-035", cabinet: "top-right", name: "會議室專用 vivo 充電頭＋線", count: 0, unit: "組", note: "勿拿！10/24已轉給 David 使用", tag: "借出中" },
       { id: "item-036", cabinet: "top-right", name: "Apple 96W 原廠充電器盒裝", count: 1, unit: "個", note: "2025/11/10 新購入", tag: "充電器" },
       { id: "item-037", cabinet: "top-right", name: "Apple 96W 原廠充電頭 (舊款)", count: 2, unit: "個", note: "裸機", tag: "充電器" },
       { id: "item-038", cabinet: "top-right", name: "Apple 61W 原廠充電頭 (舊款)", count: 1, unit: "個", note: "裸機", tag: "充電器" },
@@ -336,20 +379,20 @@
       { id: "item-040", cabinet: "top-right", name: "Type-C to Type-C 白色線", count: 1, unit: "條", note: "附魔鬼氈束帶", tag: "線材" },
       { id: "item-041", cabinet: "top-right", name: "Apple Type-C to Type-C 線 (損壞)", count: 1, unit: "條", note: "故障待報廢", tag: "損壞品" },
 
-      { id: "item-042", cabinet: "top-center", name: "D-Link AC1300 雙頻 USB 網卡", count: 2, unit: "個", note: "DWA-182 盒裝", tag: "網通設備" },
-      { id: "item-043", cabinet: "top-center", name: "D-Link 5埠 Gigabit 交換器", count: 1, unit: "台", note: "DGS-1005A 桌上型", tag: "網通設備" },
-      { id: "item-044", cabinet: "top-center", name: "Iware 金屬折疊手機平板支架", count: 2, unit: "個", note: "金屬立體支架", tag: "辦公周邊" },
+      { id: "item-042", cabinet: "top-center", name: "D-Link AC1300 雙頻 USB 網卡", count: 2, unit: "個", note: "DWA-182 盒裝", tag: "網通" },
+      { id: "item-043", cabinet: "top-center", name: "D-Link 5埠 Gigabit 交換器", count: 1, unit: "台", note: "DGS-1005A 桌上型", tag: "網通" },
+      { id: "item-044", cabinet: "top-center", name: "Iware 金屬折疊手機平板支架", count: 2, unit: "個", note: "金屬立體支架", tag: "支架" },
       { id: "item-045", cabinet: "top-center", name: "創見 4埠 USB 3.1 Hub (HUB3)", count: 1, unit: "個", note: "盒裝含獨立變壓器", tag: "轉接器" },
-      { id: "item-046", cabinet: "top-center", name: "Ulanzi ST-02S 全金屬手機夾", count: 2, unit: "個", note: "冷靴攝影支架盒裝", tag: "攝影器材" },
-      { id: "item-047", cabinet: "top-center", name: "Kingston 攜帶型 75% 酒精噴霧", count: 1, unit: "瓶", note: "金屬瓶身高質感攜帶款", tag: "防疫用品" },
-      { id: "item-048", cabinet: "top-center", name: "創見可攜式 SSD 固態硬碟", count: 1, unit: "組", note: "含專用 Type-C 短線", tag: "儲存裝置" },
-      { id: "item-049", cabinet: "top-center", name: "ENGINEER PTZ-61 日本防靜電鑷子", count: 2, unit: "支", note: "二號精密先細型夾子", tag: "工程工具" },
+      { id: "item-046", cabinet: "top-center", name: "Ulanzi ST-02S 全金屬手機夾", count: 2, unit: "個", note: "冷靴攝影支架盒裝", tag: "支架" },
+      { id: "item-047", cabinet: "top-center", name: "Kingston 攜帶型 75% 酒精噴霧", count: 1, unit: "瓶", note: "金屬瓶身高質感攜帶款", tag: "防疫" },
+      { id: "item-048", cabinet: "top-center", name: "創見可攜式 SSD 固態硬碟", count: 1, unit: "組", note: "含專用 Type-C 短線", tag: "儲存" },
+      { id: "item-049", cabinet: "top-center", name: "ENGINEER PTZ-61 日本防靜電鑷子", count: 2, unit: "支", note: "二號精密先細型夾子", tag: "工具" },
       { id: "item-050", cabinet: "top-center", name: "AMACHINE 11-in-1 Type-C 擴充座", count: 1, unit: "台", note: "多功能擴充塢", tag: "轉接器" },
 
-      { id: "item-051", cabinet: "top-left", name: "聯想 ThinkPad 小紅點鍵盤帽", count: 9, unit: "顆", note: "料號 SM20S56933 替換用", tag: "耗材配件" },
+      { id: "item-051", cabinet: "top-left", name: "聯想 ThinkPad 小紅點鍵盤帽", count: 9, unit: "顆", note: "料號 SM20S56933 替換用", tag: "配件" },
       { id: "item-052", cabinet: "top-left", name: "USB 黑色粗線 (公對母延長)", count: 1, unit: "條", note: "黑色散裝粗線", tag: "線材" },
       { id: "item-053", cabinet: "top-left", name: "USB to Type-C 紅白雙色編織線", count: 1, unit: "條", note: "紅白相間款", tag: "線材" },
-      { id: "item-054", cabinet: "top-left", name: "Keystone XLR 3針轉5針 音訊轉接頭", count: 1, unit: "個", note: "AUD621 公轉母金屬頭", tag: "音訊轉接" }
+      { id: "item-054", cabinet: "top-left", name: "Keystone XLR 3針轉5針 音訊轉接頭", count: 1, unit: "個", note: "AUD621 公轉母金屬頭", tag: "轉接器" }
     ];
 
     let doorOpen = false;
@@ -357,34 +400,32 @@
     let loansList = [];
     let currentUploadId = null;
 
-    // 開關門動作：直接切換視圖，絕無任何卡住可能
     function toggleDoor() {
       doorOpen = !doorOpen;
       const doorsView = document.getElementById('closed-doors-view');
       const gridView = document.getElementById('grid-view');
       const singleView = document.getElementById('single-view');
-      const btn = document.getElementById('main-door-btn');
+      const doorText = document.getElementById('door-btn-text');
       const hint = document.getElementById('status-hint');
 
       if (doorOpen) {
         doorsView.style.display = 'none';
         gridView.style.display = 'grid';
         singleView.style.display = 'none';
-        btn.innerText = '🔒 關閉鐵櫃';
-        btn.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 shadow transition';
-        hint.innerText = '✅ 櫃門已開，點選任意櫃格檢視物品';
+        doorText.innerText = '關閉鐵櫃';
+        hint.innerText = '✨ 櫃門開開囉！點選格子看裡面有什麼';
+        hint.className = 'text-emerald-800 font-bold bg-emerald-100/80 px-2.5 py-1 rounded-full';
       } else {
         doorsView.style.display = 'grid';
         gridView.style.display = 'none';
         singleView.style.display = 'none';
-        btn.innerText = '🚪 打開鐵櫃';
-        btn.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-stone-800 text-white hover:bg-stone-700 shadow transition';
-        hint.innerText = '👉 請點擊櫃門或右上角按鈕打開';
+        doorText.innerText = '打開鐵櫃';
+        hint.innerText = '👉 點擊大門或按鈕開櫃子！';
+        hint.className = 'text-amber-800 font-bold bg-amber-100/80 px-2.5 py-1 rounded-full';
         document.getElementById('breadcrumb-area').style.display = 'none';
       }
     }
 
-    // 進入單格
     function openCab(cabKey) {
       currentCabKey = cabKey;
       document.getElementById('grid-view').style.display = 'none';
@@ -395,7 +436,6 @@
       renderItems(cabKey);
     }
 
-    // 返回全櫃
     function backToAll() {
       currentCabKey = null;
       document.getElementById('grid-view').style.display = 'grid';
@@ -403,7 +443,6 @@
       document.getElementById('breadcrumb-area').style.display = 'none';
     }
 
-    // 預覽更新
     function updatePreviews() {
       const keys = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
       keys.forEach(k => {
@@ -413,16 +452,15 @@
         if (countEl) countEl.innerText = `${its.length} 項`;
         if (prevEl) {
           prevEl.innerHTML = its.slice(0, 3).map(it => `
-            <div class="truncate flex justify-between text-[11px]">
-              <span class="truncate text-stone-700">• ${it.name}</span>
-              <span class="text-stone-400 font-bold shrink-0">${it.count}</span>
+            <div class="truncate flex justify-between items-center text-xs">
+              <span class="truncate text-stone-700 font-medium">• ${it.name}</span>
+              <span class="ml-1 bg-stone-100 text-stone-600 font-extrabold text-[11px] px-1.5 py-0.2 rounded-md shrink-0">${it.count}</span>
             </div>
-          `).join('') + (its.length > 3 ? `<span class="text-[10px] text-stone-400 italic">+ 還有 ${its.length - 3} 樣...</span>` : '');
+          `).join('') + (its.length > 3 ? `<span class="text-[10px] text-amber-800/60 font-bold italic mt-0.5">還有 ${its.length - 3} 樣小寶物...</span>` : '');
         }
       });
     }
 
-    // 渲染清單
     function renderItems(cabKey, keyword = '') {
       const list = document.getElementById('items-list');
       let its = allItems.filter(i => i.cabinet === cabKey);
@@ -435,37 +473,39 @@
       document.getElementById('single-count').innerText = `${its.length} 樣物品`;
 
       if (its.length === 0) {
-        list.innerHTML = `<div class="col-span-full py-10 text-center text-xs text-stone-400">尚無物品</div>`;
+        list.innerHTML = `<div class="col-span-full py-12 text-center text-xs text-stone-400 font-bold">空空如也～沒有找到東西 🍃</div>`;
         return;
       }
 
       list.innerHTML = its.map(it => `
-        <div class="bg-white rounded-xl p-3 border border-stone-200 shadow-sm flex flex-col justify-between">
-          <div class="flex items-start gap-2.5">
-            <div class="w-14 h-14 rounded-lg bg-stone-100 border border-stone-200 shrink-0 overflow-hidden flex items-center justify-center relative group">
-              ${it.image_url ? `<img src="${it.image_url}" class="w-full h-full object-cover">` : `<span class="text-2xl">${getEmoji(it.tag, it.name)}</span>`}
-              <button onclick="changePhoto('${it.id}')" class="absolute inset-0 bg-stone-900/60 text-white text-[10px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition">
-                <span>📷</span><span>換照</span>
+        <div class="bg-white rounded-3xl p-3.5 border-2 border-stone-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+          <div class="flex items-start gap-3">
+            <div class="w-16 h-16 rounded-2xl bg-amber-50/60 border-2 border-dashed border-amber-200 shrink-0 overflow-hidden flex items-center justify-center relative group">
+              ${it.image_url ? `<img src="${it.image_url}" class="w-full h-full object-cover">` : `<span class="text-3xl">${getEmoji(it.tag, it.name)}</span>`}
+              <button onclick="changePhoto('${it.id}')" class="absolute inset-0 bg-stone-900/60 text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition">
+                <span>📷</span><span>換照片</span>
               </button>
             </div>
             <div class="flex-1 min-w-0">
-              <span class="text-[10px] bg-stone-100 text-stone-600 px-1 py-0.5 rounded font-medium">${it.tag || '物料'}</span>
-              ${it.note && it.note.includes('勿拿') ? '<span class="text-[10px] bg-rose-100 text-rose-700 px-1 py-0.5 rounded font-bold">勿拿</span>' : ''}
-              <div class="text-xs font-bold text-stone-800 mt-1 truncate" title="${it.name}">${it.name}</div>
-              <div class="text-[11px] text-stone-500 truncate mt-0.5">${it.note || '無備註'}</div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] bg-amber-100/70 text-amber-800 px-2 py-0.5 rounded-lg font-bold">${it.tag || '物料'}</span>
+                ${it.note && it.note.includes('勿拿') ? '<span class="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-lg font-extrabold">⚠️ 勿拿</span>' : ''}
+              </div>
+              <div class="text-xs font-extrabold text-stone-800 mt-1 truncate" title="${it.name}">${it.name}</div>
+              <div class="text-[11px] text-stone-400 truncate mt-0.5">${it.note || '無備註'}</div>
             </div>
           </div>
 
-          <div class="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <div class="text-xs">
-              <span class="text-stone-400">剩餘:</span>
-              <span class="font-bold text-sm text-stone-800">${it.count}</span>
+          <div class="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between">
+            <div class="text-xs flex items-baseline gap-1">
+              <span class="text-stone-400 text-[11px]">剩餘:</span>
+              <span class="font-extrabold text-base text-amber-900">${it.count}</span>
               <span class="text-stone-400 text-[11px]">${it.unit || '個'}</span>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="changeQty('${it.id}', -1)" class="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs">－</button>
-              <button onclick="changeQty('${it.id}', 1)" class="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs">＋</button>
-              <button onclick="openLoanPopup('${it.id}')" ${it.count <= 0 ? 'disabled' : ''} class="ml-1 text-xs px-2.5 py-1 rounded bg-stone-800 text-white font-medium hover:bg-stone-700 disabled:bg-stone-300">借出</button>
+              <button onclick="changeQty('${it.id}', -1)" class="w-7 h-7 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-extrabold text-xs active:scale-95">－</button>
+              <button onclick="changeQty('${it.id}', 1)" class="w-7 h-7 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-extrabold text-xs active:scale-95">＋</button>
+              <button onclick="openLoanPopup('${it.id}')" ${it.count <= 0 ? 'disabled' : ''} class="ml-1 text-xs px-3 py-1.5 rounded-xl bg-amber-800 text-white font-extrabold hover:bg-amber-900 disabled:bg-stone-200 disabled:text-stone-400 active:scale-95 shadow-xs">借出</button>
             </div>
           </div>
         </div>
@@ -480,13 +520,15 @@
       if (name.includes('滑鼠')) return '🖱️';
       if (name.includes('硬碟')) return '💾';
       if (name.includes('支架')) return '📐';
+      if (name.includes('濾網')) return '🍃';
+      if (name.includes('酒精')) return '🧴';
+      if (name.includes('小紅點')) return '🔴';
       if (tag === '線材') return '🔌';
       if (tag === '轉接器') return '⚡';
       if (tag === '充電器') return '🔋';
       return '📦';
     }
 
-    // 數量修改
     function changeQty(id, delta) {
       const it = allItems.find(i => i.id === id);
       if (!it) return;
@@ -495,19 +537,17 @@
       updatePreviews();
     }
 
-    // 換照
     function changePhoto(id) {
       currentUploadId = id;
       document.getElementById('file-input').click();
     }
 
-    // 借出彈窗
     function openLoanPopup(id) {
       const it = allItems.find(i => i.id === id);
       if (!it) return;
       document.getElementById('loan-item-id').value = it.id;
       document.getElementById('popup-item-name').innerText = it.name;
-      document.getElementById('popup-stock').innerText = `現存庫存：${it.count} ${it.unit || '個'}`;
+      document.getElementById('popup-stock').innerText = `現在櫃子裡還有：${it.count} ${it.unit || '個'}`;
       document.getElementById('loan-qty').max = it.count;
       document.getElementById('loan-qty').value = 1;
       document.getElementById('loan-day').value = new Date().toISOString().split('T')[0];
@@ -520,23 +560,22 @@
       document.getElementById('loan-popup').style.display = 'none';
     }
 
-    // 借還清單彈窗
     function openLoanModalList() {
       const tbody = document.getElementById('history-table-body');
       if (loansList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-stone-400">目前尚無借出紀錄</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-stone-400 font-bold">目前大家都很乖，沒有未還的物品 (ˊo̶̶̷ᴗo̶̶̷`)</td></tr>`;
       } else {
         tbody.innerHTML = loansList.map(l => {
           const it = allItems.find(i => i.id === l.item_id) || { name: '未知物品' };
           const isBorrowed = l.status === 'borrowed';
           return `
-            <tr>
-              <td class="py-2 px-2">${l.date}</td>
-              <td class="py-2 px-2 font-bold">${l.borrower}</td>
-              <td class="py-2 px-2">${it.name}</td>
-              <td class="py-2 px-2 font-bold">${l.amount}</td>
-              <td class="py-2 px-2 text-right">
-                ${isBorrowed ? `<button onclick="returnItemLoan('${l.id}', '${l.item_id}', ${l.amount})" class="px-2 py-0.5 bg-emerald-600 text-white rounded text-xs">歸還</button>` : '<span class="text-stone-400">已歸還</span>'}
+            <tr class="hover:bg-amber-50/40 transition">
+              <td class="py-2.5 px-3 text-stone-500">${l.date}</td>
+              <td class="py-2.5 px-3 font-extrabold text-stone-800">${l.borrower}</td>
+              <td class="py-2.5 px-3 text-stone-700">${it.name}</td>
+              <td class="py-2.5 px-3 font-extrabold text-amber-800">${l.amount}</td>
+              <td class="py-2.5 px-3 text-right">
+                ${isBorrowed ? `<button onclick="returnItemLoan('${l.id}', '${l.item_id}', ${l.amount})" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs">歸還入櫃</button>` : '<span class="text-stone-400 font-bold text-xs">已歸還 ✓</span>'}
               </td>
             </tr>
           `;
@@ -556,17 +595,13 @@
       openLoanModalList();
     }
 
-    // 綁定事件監聽（防止 HTML inline onclick 被阻斷）
     window.addEventListener('DOMContentLoaded', () => {
-      // 門片點擊
       document.getElementById('main-door-btn').addEventListener('click', toggleDoor);
       document.getElementById('closed-doors-view').addEventListener('click', toggleDoor);
 
-      // 返回按鈕
       document.getElementById('btn-back-all').addEventListener('click', backToAll);
       document.getElementById('btn-back-single').addEventListener('click', backToAll);
 
-      // 6 格櫃點擊
       document.querySelectorAll('.cab-grid-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const cab = btn.getAttribute('data-cab');
@@ -574,19 +609,16 @@
         });
       });
 
-      // 搜尋
       document.getElementById('search-box').addEventListener('input', (e) => {
         if (currentCabKey) renderItems(currentCabKey, e.target.value);
       });
 
-      // 借還清單
       document.getElementById('main-loan-btn').addEventListener('click', openLoanModalList);
       document.getElementById('close-history-x').addEventListener('click', () => document.getElementById('history-popup').style.display = 'none');
       document.getElementById('close-history-btn').addEventListener('click', () => document.getElementById('history-popup').style.display = 'none');
       document.getElementById('close-loan-x').addEventListener('click', closeLoanPopup);
       document.getElementById('close-loan-btn').addEventListener('click', closeLoanPopup);
 
-      // 登記借出提交
       document.getElementById('loan-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const id = document.getElementById('loan-item-id').value;
@@ -597,7 +629,7 @@
 
         const it = allItems.find(i => i.id === id);
         if (!it || amount > it.count) {
-          alert('借出量不得大於庫存！');
+          alert('借出數量不能大於現存庫存唷！');
           return;
         }
 
@@ -609,7 +641,6 @@
         updatePreviews();
       });
 
-      // 本機拍照換照
       document.getElementById('file-input').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file || !currentUploadId) return;
