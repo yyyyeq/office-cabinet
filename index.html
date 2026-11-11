@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>辦公室低值品鐵櫃管理系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Fonts: Noto Sans TC & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      background-color: #ECEAE4;
+    }
+    .perspective-1200 {
+      perspective: 1400px;
+    }
+    .door-left {
+      transform-origin: left center;
+      transition: transform 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .door-right {
+      transform-origin: right center;
+      transition: transform 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .door-open-left {
+      transform: rotateY(-130deg);
+    }
+    .door-open-right {
+      transform: rotateY(130deg);
+    }
+    .cabinet-shell {
+      background: linear-gradient(145deg, #F9F8F5 0%, #EFECE6 100%);
+      box-shadow: 0 25px 50px -12px rgba(45, 52, 60, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+    }
+    .metal-door {
+      background: linear-gradient(180deg, #F7F6F2 0%, #EDE9E1 100%);
+      box-shadow: inset 1px 1px 2px rgba(255,255,255,0.8), inset -1px -1px 3px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .metal-handle {
+      background: linear-gradient(180deg, #D4D4D8 0%, #A1A1AA 50%, #71717A 100%);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.6);
+    }
+    .louver-slot {
+      background: linear-gradient(180deg, #27272A 0%, #71717A 100%);
+      height: 3px;
+      border-radius: 2px;
+      opacity: 0.25;
+    }
+    .grid-compartment {
+      background: #E8E5DE;
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.08), inset -1px -1px 3px rgba(255,255,255,0.6);
+      transition: all 0.2s ease-in-out;
+    }
+    .grid-compartment:hover {
+      background: #E2DFD7;
+      transform: scale(1.01);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+  <header class="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-40 px-4 py-3 sm:px-6">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-2xl">🗄️</span>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-stone-800 flex items-center gap-2">
+            辦公室低值品鐵櫃
+            <span id="sync-status" class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-normal">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 雲端連線中
+            </span>
+          </h1>
+          <p class="text-xs text-stone-500 hidden sm:block">即時同步・手機拍照上傳・借還記錄追蹤</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleCabinetDoor()" id="door-btn" class="text-xs sm:text-sm font-medium px-3.5 py-1.5 rounded-lg bg-stone-800 text-white hover:bg-stone-700 transition shadow-sm flex items-center gap-1.5">
+          <span id="door-btn-icon">🚪</span> <span id="door-btn-text">打開鐵櫃</span>
+        </button>
+        <button onclick="openLoanHistoryModal()" class="text-xs sm:text-sm font-medium px-3.5 py-1.5 rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-200 transition border border-amber-200 flex items-center gap-1.5">
+          <span>📋</span> 借還登記冊 (<span id="loan-count-badge">0</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 flex flex-col items-center justify-center">
+
+    <div id="cabinet-view" class="w-full max-w-4xl relative perspective-1200 py-4 transition-all">
+
+      <div class="flex justify-between items-center mb-3 px-1 text-xs sm:text-sm text-stone-600">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-stone-700">米白色烤漆雙門鐵櫃</span>
+          <span class="text-stone-400">|</span>
+          <span id="cabinet-hint">點擊把手或按鈕開啟櫃門</span>
+        </div>
+        <div id="nav-breadcrumbs" class="hidden items-center gap-1 text-xs text-stone-500">
+          <button onclick="showAllCompartments()" class="hover:text-stone-800 underline">全櫃格位</button>
+          <span>/</span>
+          <span id="current-compartment-title" class="font-bold text-stone-800">所有格位</span>
+        </div>
+      </div>
+
+      <div class="cabinet-shell rounded-2xl p-4 sm:p-6 border-4 border-[#E2DDD3] relative overflow-hidden min-h-[580px] flex flex-col justify-between">
+
+        <div id="compartments-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 h-full flex-1 z-0">
+          <div onclick="selectCompartment('top-left')" class="grid-compartment rounded-xl p-3 flex flex-col cursor-pointer border border-stone-300/80 group">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+              <span class="text-xs font-bold bg-stone-200/90 text-stone-700 px-2 py-0.5 rounded">左上櫃</span>
+              <span id="badge-top-left" class="text-xs font-semibold text-stone-600 bg-white/70 px-2 py-0.5 rounded-full shadow-2xs">0 項</span>
+            </div>
+            <div id="preview-top-left" class="flex-1 mt-2 text-xs text-stone-500 overflow-hidden flex flex-col gap-1">載入中...</div>
+            <div class="text-[11px] text-amber-700 font-medium mt-2 flex items-center gap-1 group-hover:translate-x-1 transition">進入此櫃 →</div>
+          </div>
+
+          <div onclick="selectCompartment('top-center')" class="grid-compartment rounded-xl p-3 flex flex-col cursor-pointer border border-stone-300/80 group">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+              <span class="text-xs font-bold bg-stone-200/90 text-stone-700 px-2 py-0.5 rounded">中上櫃</span>
+              <span id="badge-top-center" class="text-xs font-semibold text-stone-600 bg-white/70 px-2 py-0.5 rounded-full shadow-2xs">0 項</span>
+            </div>
+            <div id="preview-top-center" class="flex-1 mt-2 text-xs text-stone-500 overflow-hidden flex flex-col gap-1">載入中...</div>
+            <div class="text-[11px] text-amber-700 font-medium mt-2 flex items-center gap-1 group-hover:translate-x-1 transition">進入此櫃 →</div>
+          </div>
+
+          <div onclick="selectCompartment('top-right')" class="grid-compartment rounded-xl p-3 flex flex-col cursor-pointer border border-stone-300/80 group">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+              <span class="text-xs font-bold bg-stone-200/90 text-stone-700 px-2 py-0.5 rounded">右上櫃</span>
+              <span id="badge-top-right" class="text-xs font-semibold text-stone-600 bg-white/70 px-2 py-0.5 rounded-full shadow-2xs">0 項</span>
+            </div>
+            <div id="preview-top-right" class="flex-1 mt-2 text-xs text-stone-500 overflow-hidden flex flex-col gap-1">載入中...</div>
+            <div class="text-[11px] text-amber-700 font-medium mt-2 flex items-center gap-1 group-hover:translate-x-1 transition">進入此櫃 →</div>
+          </div>
+
+          <div onclick="selectCompartment('bottom-left')" class="grid-compartment rounded-xl p-3 flex flex-col cursor-pointer border border-stone-300/80 group">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+              <span class="text-xs font-bold bg-stone-200/90 text-stone-700 px-2 py-0.5 rounded">左下櫃</span>
+              <span id="badge-bottom-left" class="text-xs font-semibold text-stone-600 bg-white/70 px-2 py-0.5 rounded-full shadow-2xs">0 項</span>
+            </div>
+            <div id="preview-bottom-left" class="flex-1 mt-2 text-xs text-stone-500 overflow-hidden flex flex-col gap-1">載入中...</div>
+            <div class="text-[11px] text-amber-700 font-medium mt-2 flex items-center gap-1 group-hover:translate-x-1 transition">進入此櫃 →</div>
+          </div>
+
+          <div onclick="selectCompartment('bottom-center')" class="grid-compartment rounded-xl p-3 flex flex-col cursor-pointer border border-stone-300/80 group">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+              <span class="text-xs font-bold bg-stone-200/90 text-stone-700 px-2 py-0.5 rounded">中下櫃 (下中)</span>
+              <span id="badge-bottom-center" class="text-xs font-semibold text-stone-600 bg-white/70 px-2 py-0.5 rounded-full shadow-2xs">0 項</span>
+            </div>
+            <div id="preview-bottom-center" class="flex-1 mt-2 text-xs text-stone-500 overflow-hidden flex flex-col gap-1">載入中...</div>
+            <div class="text-[11px] text-amber-700 font-medium mt-2 flex items-center gap-1 group-hover:translate-x-1 transition">進入此櫃 →</div>
+          </div>
+
+          <div onclick="selectCompartment('bottom-right')" class="grid-compartment rounded-xl p-3 flex flex-col cursor-pointer border border-stone-300/80 group">
+            <div class="flex justify-between items-center pb-2 border-b border-stone-300">
+              <span class="text-xs font-bold bg-stone-200/90 text-stone-700 px-2 py-0.5 rounded">右下櫃 (下右)</span>
+              <span id="badge-bottom-right" class="text-xs font-semibold text-stone-600 bg-white/70 px-2 py-0.5 rounded-full shadow-2xs">0 項</span>
+            </div>
+            <div id="preview-bottom-right" class="flex-1 mt-2 text-xs text-stone-500 overflow-hidden flex flex-col gap-1">載入中...</div>
+            <div class="text-[11px] text-amber-700 font-medium mt-2 flex items-center gap-1 group-hover:translate-x-1 transition">進入此櫃 →</div>
+          </div>
+        </div>
+
+        <div id="single-compartment-view" class="hidden flex-col h-full z-0 flex-1">
+          <div class="flex justify-between items-center mb-4 pb-3 border-b border-stone-300">
+            <div class="flex items-center gap-3">
+              <button onclick="showAllCompartments()" class="text-xs px-2.5 py-1 rounded bg-stone-200 hover:bg-stone-300 text-stone-700 font-medium">← 返回全櫃</button>
+              <h2 id="active-compartment-heading" class="text-base font-bold text-stone-800">櫃位內容</h2>
+              <span id="active-compartment-count" class="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">0 樣品項</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="filter-input" oninput="filterItems(this.value)" placeholder="搜尋此櫃物品..." class="text-xs px-3 py-1.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-stone-400 bg-white">
+            </div>
+          </div>
+
+          <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto max-h-[500px] pr-1">
+          </div>
+        </div>
+
+        <div id="door-left" onclick="toggleCabinetDoor()" class="metal-door door-left absolute inset-y-0 left-0 w-1/2 z-20 flex flex-col justify-between p-6 border-r border-stone-300 cursor-pointer">
+          <div class="flex flex-col gap-1.5 w-16 opacity-70">
+            <div class="louver-slot"></div>
+            <div class="louver-slot"></div>
+            <div class="louver-slot"></div>
+          </div>
+          <div class="bg-stone-100/90 border border-stone-300 p-3 rounded-lg shadow-inner max-w-[180px]">
+            <div class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">OFFICE STORAGE</div>
+            <div class="text-xs font-bold text-stone-700 mt-0.5">低值品管理櫃</div>
+            <div class="text-[10px] text-stone-500 mt-1">借用請隨手登記</div>
+          </div>
+          <div class="flex justify-end items-center">
+            <div class="metal-handle w-3.5 h-20 rounded-full mr-2"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-stone-700 border border-stone-400 shadow-inner"></div>
+          </div>
+          <div class="flex flex-col gap-1.5 w-16 opacity-70">
+            <div class="louver-slot"></div>
+            <div class="louver-slot"></div>
+          </div>
+        </div>
+
+        <div id="door-right" onclick="toggleCabinetDoor()" class="metal-door door-right absolute inset-y-0 right-0 w-1/2 z-20 flex flex-col justify-between p-6 border-l border-stone-200 cursor-pointer">
+          <div class="flex flex-col gap-1.5 w-16 self-end opacity-70">
+            <div class="louver-slot"></div>
+            <div class="louver-slot"></div>
+            <div class="louver-slot"></div>
+          </div>
+          <div class="self-end bg-amber-50/90 border border-amber-200 p-2.5 rounded-md shadow-sm max-w-[170px] -rotate-1">
+            <div class="text-[11px] text-amber-900 font-medium">📌 提醒：線材用畢請物歸原位</div>
+          </div>
+          <div class="flex items-center">
+            <div class="metal-handle w-3.5 h-20 rounded-full ml-2"></div>
+          </div>
+          <div class="flex flex-col gap-1.5 w-16 self-end opacity-70">
+            <div class="louver-slot"></div>
+            <div class="louver-slot"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <input type="file" id="photo-file-input" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+
+  <div id="loan-modal" class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-stone-200">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold text-stone-800 text-base flex items-center gap-1.5">
+          <span>📝</span> 登記借出
+        </h3>
+        <button onclick="closeLoanModal()" class="text-stone-400 hover:text-stone-600 text-lg">&times;</button>
+      </div>
+
+      <div class="text-xs bg-stone-50 p-2.5 rounded-lg border border-stone-200 mb-3 text-stone-600">
+        <span class="font-bold text-stone-700" id="loan-modal-item-name">物品名稱</span>
+        <div class="text-[11px] text-stone-400 mt-0.5" id="loan-modal-item-stock">目前庫存：0</div>
+      </div>
+
+      <form id="loan-form" onsubmit="submitLoan(event)" class="space-y-3">
+        <input type="hidden" id="loan-item-id">
+        <div>
+          <label class="block text-xs font-semibold text-stone-600 mb-1">借用人姓名</label>
+          <input type="text" id="loan-borrower" required placeholder="例如：David、雅庭" class="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-stone-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-stone-600 mb-1">借出數量</label>
+            <input type="number" id="loan-amount" min="1" value="1" required class="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-stone-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-stone-600 mb-1">借出日期</label>
+            <input type="date" id="loan-date" required class="w-full text-xs px-2.5 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-stone-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-600 mb-1">借用用途 / 備註</label>
+          <input type="text" id="loan-purpose" placeholder="例如：會議室外接螢幕、測試手機" class="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-stone-500">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeLoanModal()" class="flex-1 py-2 text-xs rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">取消</button>
+          <button type="submit" id="loan-submit-btn" class="flex-1 py-2 text-xs rounded-lg bg-stone-800 text-white font-medium hover:bg-stone-700 shadow-sm">確認借出</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="history-modal" class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl border border-stone-200 flex flex-col max-h-[85vh]">
+      <div class="flex justify-between items-center pb-3 border-b border-stone-200">
+        <h3 class="font-bold text-stone-800 text-base flex items-center gap-1.5">
+          <span>📋</span> 低值品借還登記冊
+        </h3>
+        <button onclick="closeLoanHistoryModal()" class="text-stone-400 hover:text-stone-600 text-lg">&times;</button>
+      </div>
+
+      <div class="py-2 text-xs text-stone-500">
+        所有借出物品與歸還狀態，點擊「確認歸還」會自動將庫存補回對應鐵櫃格位。
+      </div>
+
+      <div class="overflow-y-auto flex-1 my-2">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-stone-50 text-stone-500 border-b border-stone-200">
+              <th class="py-2 px-2.5 font-medium">日期</th>
+              <th class="py-2 px-2.5 font-medium">借用人</th>
+              <th class="py-2 px-2.5 font-medium">品項</th>
+              <th class="py-2 px-2 font-medium">數量</th>
+              <th class="py-2 px-2.5 font-medium">用途備註</th>
+              <th class="py-2 px-2.5 font-medium text-right">操作</th>
+            </tr>
+          </thead>
+          <tbody id="loans-table-body" class="divide-y divide-stone-100">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-3 border-t border-stone-200 flex justify-end">
+        <button onclick="closeLoanHistoryModal()" class="px-4 py-1.5 text-xs rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://qmzgdvrjwgjlnwduswkz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_WOx-4_9CosVCAE1oPFQbbA_M4Y_uT2d";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const CABINET_NAMES = {
+      'top-left': '左上櫃',
+      'top-center': '中上櫃',
+      'top-right': '右上櫃',
+      'bottom-left': '左下櫃',
+      'bottom-center': '中下櫃 (下中)',
+      'bottom-right': '右下櫃 (下右)'
+    };
+
+    let isDoorOpen = false;
+    let currentCabinet = null;
+    let allItems = [];
+    let activeLoans = [];
+    let pendingUploadItemId = null;
+
+    function playCabinetSound(isOpen) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        if (isOpen) {
+          osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.35);
+        } else {
+          osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.25);
+        }
+      } catch (e) {
+        console.warn('Web Audio 播放限制', e);
+      }
+    }
+
+    function toggleCabinetDoor() {
+      isDoorOpen = !isDoorOpen;
+      const leftDoor = document.getElementById('door-left');
+      const rightDoor = document.getElementById('door-right');
+      const doorBtnText = document.getElementById('door-btn-text');
+      const doorBtnIcon = document.getElementById('door-btn-icon');
+      const cabinetHint = document.getElementById('cabinet-hint');
+
+      if (isDoorOpen) {
+        leftDoor.classList.add('door-open-left');
+        rightDoor.classList.add('door-open-right');
+        doorBtnText.innerText = '關上鐵櫃';
+        doorBtnIcon.innerText = '🔒';
+        cabinetHint.innerText = '點選任意櫃格檢視物品或登記借出';
+        playCabinetSound(true);
+      } else {
+        leftDoor.classList.remove('door-open-left');
+        rightDoor.classList.remove('door-open-right');
+        doorBtnText.innerText = '打開鐵櫃';
+        doorBtnIcon.innerText = '🚪';
+        cabinetHint.innerText = '點擊把手或按鈕開啟櫃門';
+        showAllCompartments();
+        playCabinetSound(false);
+      }
+    }
+
+    async function fetchInventory() {
+      const syncStatus = document.getElementById('sync-status');
+      try {
+        const { data, error } = await supabase
+          .from('cabinet_items')
+          .select('*')
+          .order('id', { ascending: true });
+
+        if (error) throw error;
+        allItems = data || [];
+        updateCompartmentPreviews();
+        if (currentCabinet) {
+          renderCompartmentItems(currentCabinet);
+        }
+        syncStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 雲端同步完成';
+        syncStatus.className = 'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-normal';
+      } catch (err) {
+        console.error('抓取庫存失敗:', err);
+        syncStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> 連線異常';
+        syncStatus.className = 'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 font-normal';
+      }
+    }
+
+    async function fetchLoans() {
+      try {
+        const { data, error } = await supabase
+          .from('cabinet_loans')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        activeLoans = data || [];
+        const borrowedCount = activeLoans.filter(l => l.status === 'borrowed').length;
+        document.getElementById('loan-count-badge').innerText = borrowedCount;
+        renderLoanHistoryTable();
+      } catch (err) {
+        console.error('抓取借還記錄失敗:', err);
+      }
+    }
+
+    function updateCompartmentPreviews() {
+      const cabinets = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
+      cabinets.forEach(cab => {
+        const items = allItems.filter(i => i.cabinet === cab);
+        const badge = document.getElementById(`badge-${cab}`);
+        const preview = document.getElementById(`preview-${cab}`);
+        if (badge) badge.innerText = `${items.length} 樣物品`;
+        if (preview) {
+          if (items.length === 0) {
+            preview.innerHTML = '<div class="text-stone-400 italic">尚無物品</div>';
+          } else {
+            preview.innerHTML = items.slice(0, 3).map(it => `
+              <div class="truncate flex items-center justify-between text-[11px]">
+                <span class="text-stone-700 truncate pr-1">• ${it.name}</span>
+                <span class="text-stone-400 shrink-0 font-medium">${it.count}${it.unit || '個'}</span>
+              </div>
+            `).join('') + (items.length > 3 ? `<div class="text-[10px] text-stone-400 italic">+ 還有 ${items.length - 3} 樣...</div>` : '');
+          }
+        }
+      });
+    }
+
+    function selectCompartment(cabKey) {
+      if (!isDoorOpen) {
+        toggleCabinetDoor();
+      }
+      currentCabinet = cabKey;
+      document.getElementById('compartments-grid').classList.add('hidden');
+      document.getElementById('single-compartment-view').classList.remove('hidden');
+      document.getElementById('single-compartment-view').classList.add('flex');
+      document.getElementById('nav-breadcrumbs').classList.remove('hidden');
+      document.getElementById('nav-breadcrumbs').classList.add('flex');
+      
+      document.getElementById('current-compartment-title').innerText = CABINET_NAMES[cabKey] || cabKey;
+      document.getElementById('active-compartment-heading').innerText = CABINET_NAMES[cabKey] || cabKey;
+      
+      renderCompartmentItems(cabKey);
+    }
+
+    function showAllCompartments() {
+      currentCabinet = null;
+      document.getElementById('compartments-grid').classList.remove('hidden');
+      document.getElementById('single-compartment-view').classList.add('hidden');
+      document.getElementById('single-compartment-view').classList.remove('flex');
+      document.getElementById('nav-breadcrumbs').classList.add('hidden');
+      document.getElementById('nav-breadcrumbs').classList.remove('flex');
+    }
+
+    function renderCompartmentItems(cabKey, keyword = '') {
+      const container = document.getElementById('items-container');
+      let items = allItems.filter(i => i.cabinet === cabKey);
+
+      if (keyword.trim()) {
+        const term = keyword.toLowerCase();
+        items = items.filter(i => 
+          i.name.toLowerCase().includes(term) || 
+          (i.note && i.note.toLowerCase().includes(term)) ||
+          (i.tag && i.tag.toLowerCase().includes(term))
+        );
+      }
+
+      document.getElementById('active-compartment-count').innerText = `${items.length} 樣物品`;
+
+      if (items.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-12 text-center text-xs text-stone-400">查無相關物品</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        const isOutOfStock = item.count <= 0;
+        return `
+          <div class="bg-white rounded-xl p-3 border border-stone-200/90 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+            <div class="flex items-start gap-3">
+              <div class="w-16 h-16 rounded-lg bg-stone-100 border border-stone-200 shrink-0 overflow-hidden flex items-center justify-center relative group">
+                ${item.image_url ? `
+                  <img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover">
+                ` : `
+                  <span class="text-2xl">${getItemIcon(item.tag, item.name)}</span>
+                `}
+                <button onclick="triggerPhotoUpload('${item.id}')" title="更換照片" class="absolute inset-0 bg-stone-900/60 text-white text-[10px] font-medium opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition">
+                  <span>📷</span>
+                  <span>換照</span>
+                </button>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-medium">${item.tag || '物料'}</span>
+                  ${item.note && item.note.includes('勿拿') ? '<span class="text-[10px] bg-rose-100 text-rose-700 px-1 py-0.5 rounded font-bold">勿拿</span>' : ''}
+                  ${item.note && item.note.includes('故障') ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded font-bold">報廢/故障</span>' : ''}
+                </div>
+                <h4 class="text-xs font-bold text-stone-800 mt-1 truncate" title="${item.name}">${item.name}</h4>
+                <p class="text-[11px] text-stone-500 mt-0.5 line-clamp-1" title="${item.note || ''}">${item.note || '無備註'}</p>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs text-stone-500">剩餘:</span>
+                <span class="text-sm font-bold ${isOutOfStock ? 'text-rose-600' : 'text-stone-800'}">${item.count}</span>
+                <span class="text-xs text-stone-400">${item.unit || '個'}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button onclick="adjustItemCount('${item.id}', -1)" class="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center text-xs font-bold transition">−</button>
+                <button onclick="adjustItemCount('${item.id}', 1)" class="w-6 h-6 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center text-xs font-bold transition">+</button>
+                <button onclick="openLoanModalForItem('${item.id}')" ${isOutOfStock ? 'disabled' : ''} class="ml-1 text-xs px-2.5 py-1 rounded bg-stone-800 text-white font-medium hover:bg-stone-700 disabled:bg-stone-300 disabled:cursor-not-allowed transition">
+                  借出
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getItemIcon(tag, name) {
+      if (name.includes('Apple')) return '🍎';
+      if (name.includes('vivo')) return '📱';
+      if (name.includes('小米') || name.includes('耳機')) return '🎧';
+      if (name.includes('紅包')) return '🧧';
+      if (name.includes('濾網')) return '💨';
+      if (name.includes('滑鼠')) return '🖱️';
+      if (name.includes('硬碟')) return '💾';
+      if (name.includes('酒精')) return '🧴';
+      if (name.includes('鑷子')) return '🛠️';
+      if (name.includes('支架')) return '📐';
+      if (tag === '線材') return '🔌';
+      if (tag === '轉接器') return '⚡';
+      if (tag === '充電器') return '🔋';
+      return '📦';
+    }
+
+    function filterItems(keyword) {
+      if (currentCabinet) {
+        renderCompartmentItems(currentCabinet, keyword);
+      }
+    }
+
+    async function adjustItemCount(itemId, delta) {
+      const item = allItems.find(i => i.id === itemId);
+      if (!item) return;
+      const newCount = Math.max(0, item.count + delta);
+      if (newCount === item.count) return;
+
+      item.count = newCount;
+      renderCompartmentItems(currentCabinet);
+      updateCompartmentPreviews();
+
+      const { error } = await supabase
+        .from('cabinet_items')
+        .update({ count: newCount, updated_at: new Date().toISOString() })
+        .eq('id', itemId);
+
+      if (error) {
+        console.error('更新數量失敗:', error);
+        fetchInventory();
+      }
+    }
+
+    function triggerPhotoUpload(itemId) {
+      pendingUploadItemId = itemId;
+      document.getElementById('photo-file-input').click();
+    }
+
+    async function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !pendingUploadItemId) return;
+
+      const syncStatus = document.getElementById('sync-status');
+      syncStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-spin"></span> 照片上傳中...';
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const filePath = `item-${pendingUploadItemId}-${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('cabinet-images')
+          .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('cabinet-images')
+          .getPublicUrl(filePath);
+
+        const photoUrl = publicUrlData.publicUrl;
+
+        const { error: dbError } = await supabase
+          .from('cabinet_items')
+          .update({ image_url: photoUrl, updated_at: new Date().toISOString() })
+          .eq('id', pendingUploadItemId);
+
+        if (dbError) throw dbError;
+
+        const it = allItems.find(i => i.id === pendingUploadItemId);
+        if (it) it.image_url = photoUrl;
+        renderCompartmentItems(currentCabinet);
+
+        syncStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 照片已同步';
+      } catch (err) {
+        alert('照片上傳失敗：' + err.message);
+        console.error(err);
+      } finally {
+        event.target.value = '';
+        pendingUploadItemId = null;
+      }
+    }
+
+    function openLoanModalForItem(itemId) {
+      const item = allItems.find(i => i.id === itemId);
+      if (!item) return;
+
+      document.getElementById('loan-item-id').value = item.id;
+      document.getElementById('loan-modal-item-name').innerText = item.name;
+      document.getElementById('loan-modal-item-stock').innerText = `目前現存：${item.count} ${item.unit || '個'}`;
+      document.getElementById('loan-amount').max = item.count;
+      document.getElementById('loan-amount').value = 1;
+      document.getElementById('loan-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('loan-borrower').value = '';
+      document.getElementById('loan-purpose').value = '';
+
+      document.getElementById('loan-modal').classList.remove('hidden');
+    }
+
+    function closeLoanModal() {
+      document.getElementById('loan-modal').classList.add('hidden');
+    }
+
+    async function submitLoan(event) {
+      event.preventDefault();
+      const itemId = document.getElementById('loan-item-id').value;
+      const borrower = document.getElementById('loan-borrower').value.trim();
+      const date = document.getElementById('loan-date').value;
+      const amount = parseInt(document.getElementById('loan-amount').value, 10);
+      const purpose = document.getElementById('loan-purpose').value.trim();
+
+      const item = allItems.find(i => i.id === itemId);
+      if (!item || amount > item.count) {
+        alert('借出數量不得超過現存庫存！');
+        return;
+      }
+
+      const submitBtn = document.getElementById('loan-submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = '登記中...';
+
+      try {
+        const { error: loanError } = await supabase
+          .from('cabinet_loans')
+          .insert([{
+            item_id: itemId,
+            borrower,
+            date,
+            amount,
+            purpose,
+            status: 'borrowed'
+          }]);
+
+        if (loanError) throw loanError;
+
+        const newCount = item.count - amount;
+        const { error: updateError } = await supabase
+          .from('cabinet_items')
+          .update({ count: newCount, updated_at: new Date().toISOString() })
+          .eq('id', itemId);
+
+        if (updateError) throw updateError;
+
+        item.count = newCount;
+        closeLoanModal();
+        renderCompartmentItems(currentCabinet);
+        updateCompartmentPreviews();
+        fetchLoans();
+      } catch (err) {
+        alert('登記失敗：' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = '確認借出';
+      }
+    }
+
+    function openLoanHistoryModal() {
+      renderLoanHistoryTable();
+      document.getElementById('history-modal').classList.remove('hidden');
+    }
+
+    function closeLoanHistoryModal() {
+      document.getElementById('history-modal').classList.add('hidden');
+    }
+
+    function renderLoanHistoryTable() {
+      const tbody = document.getElementById('loans-table-body');
+      if (activeLoans.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-stone-400">尚無借出紀錄</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = activeLoans.map(loan => {
+        const it = allItems.find(i => i.id === loan.item_id) || { name: '未知品項' };
+        const isBorrowed = loan.status === 'borrowed';
+        return `
+          <tr class="hover:bg-stone-50 transition">
+            <td class="py-2.5 px-2.5 text-stone-600 whitespace-nowrap">${loan.date}</td>
+            <td class="py-2.5 px-2.5 font-bold text-stone-800">${loan.borrower}</td>
+            <td class="py-2.5 px-2.5 text-stone-700 font-medium">${it.name}</td>
+            <td class="py-2.5 px-2 font-bold text-stone-800">${loan.amount}</td>
+            <td class="py-2.5 px-2.5 text-stone-500">${loan.purpose || '-'}</td>
+            <td class="py-2.5 px-2.5 text-right whitespace-nowrap">
+              ${isBorrowed ? `
+                <button onclick="returnLoanItem('${loan.id}', '${loan.item_id}', ${loan.amount})" class="text-xs px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition">
+                  歸還入櫃
+                </button>
+              ` : `
+                <span class="text-stone-400 text-xs font-normal">已於 ${loan.date} 歸還</span>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function returnLoanItem(loanId, itemId, amount) {
+      if (!confirm('確認將此物品歸還入櫃？庫存數量將自動加回。')) return;
+
+      try {
+        const { error: loanError } = await supabase
+          .from('cabinet_loans')
+          .update({ status: 'returned' })
+          .eq('id', loanId);
+
+        if (loanError) throw loanError;
+
+        const it = allItems.find(i => i.id === itemId);
+        if (it) {
+          const newCount = it.count + amount;
+          await supabase
+            .from('cabinet_items')
+            .update({ count: newCount, updated_at: new Date().toISOString() })
+            .eq('id', itemId);
+
+          it.count = newCount;
+          if (currentCabinet) renderCompartmentItems(currentCabinet);
+          updateCompartmentPreviews();
+        }
+
+        fetchLoans();
+      } catch (err) {
+        alert('歸還處理失敗：' + err.message);
+      }
+    }
+
+    function setupRealtimeSubscription() {
+      supabase
+        .channel('cabinet-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'cabinet_items' }, () => {
+          fetchInventory();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'cabinet_loans' }, () => {
+          fetchLoans();
+        })
+        .subscribe();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchInventory();
+      fetchLoans();
+      setupRealtimeSubscription();
+    });
+  </script>
+</body>
+</html>
